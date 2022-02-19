@@ -1,0 +1,38 @@
+<ion-content *ngIf="players">
+    <ion-grid fixed>
+        <ion-card>
+            <ion-card-header>
+                <ion-card-subtitle>Referencia</ion-card-subtitle>
+            </ion-card-header>
+            <ion-item>
+                <ion-avatar slot="start">
+                    <img src="../../../assets/img/playerAvatar.png">
+                </ion-avatar>
+                <h5> Nombre </h5>
+                <h4 slot="end">
+                    <ion-badge color="primary" class="ion-margin-end"> P. Jugados </ion-badge>
+                </h4>
+            </ion-item>
+            <ion-card-content>
+                Solo aparecen jugadores con más de 10 partidos jugados.
+            </ion-card-content>
+        </ion-card>
+
+        <ion-list>
+            <ion-item *ngFor="let player of orderByPlayed(players)">
+                <ion-avatar slot="start" *ngIf="player.image; else imagenGenerica">
+                    <img [src]="player.image" appSafeImage>
+                </ion-avatar>
+                <ng-template #imagenGenerica>
+                    <ion-avatar slot="start">
+                        <img src="../../../assets/img/playerAvatar.png">
+                    </ion-avatar>
+                </ng-template>
+                <h6>{{player.nickname}}</h6>
+                <h4 slot="end">
+                    <ion-badge color="primary" class="ion-margin-end">{{ player.played }}</ion-badge>
+                </h4>
+            </ion-item>
+        </ion-list>
+    </ion-grid>
+</ion-content>

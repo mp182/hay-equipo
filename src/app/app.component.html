@@ -1,0 +1,49 @@
+<ion-app>
+    <ion-split-pane when="sm" contentId="main">
+        <ion-menu side="start" content-id="main">
+            <ion-header *ngIf="user$ | async as user">
+                <ion-toolbar class="customToolbar">
+                    <ion-avatar class="ion-margin">
+                        <img [src]="user.image" appSafeImage>
+                    </ion-avatar>
+                    <ion-title>
+                        <ion-chip class="chipToolbar">
+                            <ion-label>{{ user.nickname }}</ion-label>
+                        </ion-chip>
+                    </ion-title>
+                    <ion-title size="small" class="chipToolbar ion-margin-bottom">
+                        <ion-chip class="chipToolbar">
+                            <ion-label>{{ user.email }}</ion-label>
+                        </ion-chip>
+                    </ion-title>
+                </ion-toolbar>
+            </ion-header>
+            <ion-content>
+                <ion-list>
+                    <ion-item lines="none" (click)="editImage()">
+                        <ion-icon name="camera-outline" slot="start"></ion-icon>
+                        Cambiar Foto
+                    </ion-item>
+                    <ion-item lines="none" (click)="editNickname()">
+                        <ion-icon name="create" slot="start"></ion-icon>
+                        Cambiar Apodo
+                    </ion-item>
+                    <ion-item lines="none" [routerLink]="['/about']">
+                        <ion-icon name="information-circle-outline" slot="start"></ion-icon>
+                        Info de la App
+                    </ion-item>
+                </ion-list>
+            </ion-content>
+
+            <ion-footer (click)="logout()">
+                <ion-toolbar color="danger">
+                    <ion-title>Cerrar Sesión</ion-title>
+                    <ion-item color="danger" slot="secondary">
+                        <ion-icon name="log-out"></ion-icon>
+                    </ion-item>
+                </ion-toolbar>
+            </ion-footer>
+        </ion-menu>
+        <ion-router-outlet id="main"></ion-router-outlet>
+    </ion-split-pane>
+</ion-app>

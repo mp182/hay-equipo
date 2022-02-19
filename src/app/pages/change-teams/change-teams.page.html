@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar color="secondary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Cambiar Equipos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-reorder-group (ionItemReorder)="doReorder($event)" disabled="false">
+
+    <ion-item *ngFor="let item of reorderItems">
+      <ion-label *ngIf="item?.flag; else regularItem" class="ion-text-center" style="background-color: blue;">
+        <strong>{{ item.nickname }}</strong>
+      </ion-label>
+      <ng-template #regularItem>
+        <ion-label>
+          {{ item.nickname }}
+        </ion-label>
+      </ng-template>
+      <ion-reorder slot="end" *ngIf="!item?.flag"></ion-reorder>
+    </ion-item>
+
+  </ion-reorder-group>
+</ion-content>
+
+<ion-footer *ngIf="reorderItems && reorderItems[0]?.flag && reorderItems[remeraNegraIndex]?.flag">
+  <ion-toolbar color="warning" mode="ios" (click)="changeTeams()">
+    <ion-title>Guardar</ion-title>
+  </ion-toolbar>
+</ion-footer>

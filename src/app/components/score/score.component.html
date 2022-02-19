@@ -1,0 +1,20 @@
+<span *ngIf="score >= 90" class="flex-container">
+  <ion-icon name="rocket-outline"></ion-icon>
+  <span class="score">{{score | number : '1.0-0'}}</span>
+</span>
+<span *ngIf="score >= 70 && score < 90" class="flex-container">
+  <ion-icon name="star"></ion-icon>
+  <span class="score">{{score | number : '1.0-0'}}</span>
+</span>
+<span *ngIf="score >= 40 && score < 70" class="flex-container">
+  <ion-icon name="star-half"></ion-icon>
+  <span class="score">{{score | number : '1.0-0'}}</span>
+</span>
+<span *ngIf="score > 0 && score < 40" class="flex-container">
+  <ion-icon name="star-outline"></ion-icon>
+  <span class="score">{{score | number : '1.0-0'}}</span>
+</span>
+<span *ngIf="score == 0" class="flex-container">
+  <ion-icon name="star-outline"></ion-icon>
+  <span class="score">0</span>
+</span>

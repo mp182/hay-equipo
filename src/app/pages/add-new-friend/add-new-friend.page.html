@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar color="secondary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nuevo amigo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form class="form" [formGroup]="newFriendForm" (ngSubmit)="saveFriend(newFriendForm.value)">
+
+      <ion-item>
+          <ion-label position="floating" color="primary">Nombre | Apodo</ion-label>
+          <ion-input type="text" formControlName="nickname" class="form-control" required></ion-input>
+      </ion-item>
+
+      <ion-button type="submit" [disabled]="!newFriendForm.valid" expand="block" class="ion-margin-vertical">
+          OK
+      </ion-button>
+
+  </form>
+</ion-content>

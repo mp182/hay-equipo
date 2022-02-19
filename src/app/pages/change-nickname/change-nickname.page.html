@@ -1,0 +1,21 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="dashboard"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Cambiar Apodo</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    <ion-grid fixed>
+        <ion-item>
+            <ion-label position="floating">Nuevo Apodo</ion-label>
+            <ion-input type="text" [formControl]="nickname"></ion-input>
+        </ion-item>
+        <ion-button [disabled]="!nickname.valid" expand="block" class="ion-margin-vertical"
+            (click)="updateNickname(nickname.value)">
+            OK
+        </ion-button>
+    </ion-grid>
+</ion-content>

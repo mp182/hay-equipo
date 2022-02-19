@@ -1,0 +1,8 @@
+{
+  "name": "HayEquipoApp",
+  "integrations": {
+    "cordova": {},
+    "capacitor": {}
+  },
+  "type": "angular"
+}

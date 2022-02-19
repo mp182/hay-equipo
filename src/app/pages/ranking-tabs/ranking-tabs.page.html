@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Ranking</ion-title>
+    <ion-buttons slot="secondary">
+      <ion-menu-button autoHide="false"></ion-menu-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-margin">
+  <ion-grid fixed>
+    <ion-tabs>
+      <ion-tab-bar slot="top">
+        <ion-tab-button tab="ranking">
+          <ion-icon name="podium"></ion-icon>
+          <ion-label>General</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button tab="asistencias">
+          <ion-icon name="checkmark"></ion-icon>
+          <ion-label>Asistencias</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button tab="ganados">
+          <ion-icon name="medal"></ion-icon>
+          <ion-label>Partidos Ganados</ion-label>
+        </ion-tab-button>
+      </ion-tab-bar>
+    </ion-tabs>
+
+    <ion-card class="margin-top-72px" *ngIf="!rankingTabsService.tabsNavigation">
+      <ion-card-header>
+        <ion-card-subtitle>Ranking</ion-card-subtitle>
+        <ion-card-title>Categorías</ion-card-title>
+      </ion-card-header>
+      <ion-item>
+        <ion-icon name="podium" slot="start"></ion-icon>
+        <ion-text>General | Mejor Promedio</ion-text>
+      </ion-item>
+
+      <ion-item>
+        <ion-icon name="checkmark" slot="start"></ion-icon>
+        <ion-text>Asistencias | Partidos Jugados</ion-text>
+      </ion-item>
+
+      <ion-item>
+        <ion-icon name="medal" slot="start"></ion-icon>
+        <ion-text>Partidos Ganados</ion-text>
+      </ion-item>
+    </ion-card>
+  </ion-grid>
+</ion-content>

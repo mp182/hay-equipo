@@ -1,0 +1,37 @@
+ion-card-header {
+    padding-bottom: 0px;
+
+    ion-card-title {
+        align-items: center;
+        display: flex;
+        ion-icon {
+            margin-right: 8px;
+        }
+    }
+}
+
+.white {
+    color: lightgray;
+}
+
+.black {
+    color: black;
+}
+
+.yellow {
+    color: gold;
+}
+
+ion-badge {
+    min-width: 25px;
+}
+
+.teamToolbar {
+    font-size: medium;
+    font-weight: normal;
+}
+
+.team-card {
+    background-image: url('../../../assets/img/green-grass-128x128.png');
+    border: 5px solid whitesmoke;
+}

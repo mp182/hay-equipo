@@ -1,0 +1,20 @@
+<ion-card *ngIf="news?.length > 0">
+  <ion-card-header>
+    <ion-card-title>
+      <ion-icon name="newspaper-outline"></ion-icon>
+      Info!
+    </ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+    <ion-item *ngFor="let item of news" lines="none">
+      <ion-icon name="information-circle" slot="start"></ion-icon>
+      <ion-text>{{ item.description }}</ion-text>
+      <ion-button slot="end" color="danger" shape="round" (click)="delete(item.id)"
+        *ngIf="deleting != item.id && admin">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+      <ion-spinner slot="end" *ngIf="deleting === item.id" name="lines-small"></ion-spinner>
+    </ion-item>
+  </ion-card-content>
+</ion-card>

@@ -1,0 +1,51 @@
+<ion-content class="ion-padding">
+    <div class="login-container">
+
+        <ion-grid fixed>
+
+            <ion-row class="ion-justify-content-center">
+                <ion-col size-md="8">
+                    <ion-img src="../../../assets/img/appicon.png" class="login-logo"></ion-img>
+                </ion-col>
+            </ion-row>
+
+            <form class="ion-margin-vertical" [formGroup]="loginForm" (ngSubmit)="loginUser(loginForm.value)">
+
+                <ion-item>
+                    <ion-label position="floating" color="primary">Email</ion-label>
+                    <ion-input type="email" formControlName="email" required></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label position="floating" color="primary">Contraseña</ion-label>
+                    <ion-input type="password" formControlName="password" required></ion-input>
+                </ion-item>
+
+                <ion-button class="ion-margin-vertical" type="submit" [disabled]="!loginForm.valid" expand="block">
+                    Ingresar
+                </ion-button>
+
+                <ion-button type="button" (click)="loginWithGoogle()" expand="block"
+                    class="login-google-button ion-margin-vertical">
+                    <ion-img src="../../../assets/img/g-logo.png" class="g-logo"></ion-img>
+                    Ingresar con Google
+                </ion-button>
+
+                <label class="error-message">{{ errorMessage }}</label>
+            </form>
+
+            <br>
+
+            <p>
+                No tenés cuenta? <span class="link" [routerLink]="['/register']">Crear una cuenta.</span>
+            </p>
+
+            <p>
+                Olvidaste tu contraseña? <span class="link" [routerLink]="['/reset-password']">Recuperar
+                    contraseña.</span>
+            </p>
+
+        </ion-grid>
+
+    </div>
+</ion-content>

@@ -1,0 +1,136 @@
+<ng-container *ngIf="player$ | async">
+    <ion-header>
+        <ion-toolbar color="primary">
+            <ion-title>Hola {{ player.nickname }}!</ion-title>
+            <ion-buttons slot="secondary">
+                <ion-menu-button autoHide="true"></ion-menu-button>
+            </ion-buttons>
+        </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+        <ion-grid fixed>
+            <ion-card>
+                <ion-card-content>
+                    <div class="flex-container">
+                        <ion-avatar *ngIf="player.image; else imagenGenerica">
+                            <img [src]="player.image" appSafeImage>
+                        </ion-avatar>
+                        <ng-template #imagenGenerica>
+                            <ion-avatar>
+                                <img src="../../../assets/img/playerAvatar.png">
+                            </ion-avatar>
+                        </ng-template>
+                        <h1 class="text-truncate">{{ player.nickname }}</h1>
+                        <h1 class="score-wrapper">
+                            <app-score [player]="player"></app-score>
+                        </h1>
+                    </div>
+
+                    <div class="flex-container">
+                        <div class="flex-container-alt">
+                            <ion-icon name="play" style="color: #3880ff"></ion-icon>
+                            <ion-label>Jugados</ion-label>
+                        </div>
+                        <ion-badge color="primary">{{ player.played }}</ion-badge>
+                        <div class="flex-container-alt">
+                            <ion-icon name="trophy" style="color: #ffc409"></ion-icon>
+                            <ion-label>Ganados</ion-label>
+                        </div>
+                        <ion-badge color="primary">{{ player.won }}</ion-badge>
+                    </div>
+
+                    <div class="flex-container">
+                        <div class="flex-container-alt">
+                            <ion-icon name="calendar" style="color: #3dc2ff"></ion-icon>
+                            <ion-label>Últimos 5</ion-label>
+                        </div>
+                        <ng-container *ngFor="let i of [0, 1, 2, 3, 4]">
+                            <ng-container *ngIf="(!!player?.lastGames && player?.lastGames[i]); else emptySpot">
+                                <ng-container *ngIf="player.lastGames[i] === 'G'; else lostGame">
+                                    <ion-icon name="checkmark-circle" style="color: #2dd36f"></ion-icon>
+                                </ng-container>
+                                <ng-template #lostGame>
+                                    <ion-icon name="close-circle" style="color: #eb445a"></ion-icon>
+                                </ng-template>
+                            </ng-container>
+                            <ng-template #emptySpot>
+                                <ion-icon name="remove-circle" style="color: #92949c"></ion-icon>
+                            </ng-template>
+                        </ng-container>
+                    </div>
+
+                    <ion-button type="button" expand="block" color="primary" class="ion-margin-vertical"
+                        [routerLink]="['/ranking-tabs']">
+                        <ion-icon name="podium" class="ion-margin"></ion-icon>
+                        Ranking
+                        <ion-icon name="podium" class="ion-margin"></ion-icon>
+                    </ion-button>
+                </ion-card-content>
+            </ion-card>
+
+            <ion-card>
+                <ion-card-header>
+                    <ion-card-title>
+                        <ion-icon name="football"></ion-icon>
+                        Partidos disponibles
+                    </ion-card-title>
+                </ion-card-header>
+
+                <ion-card-content>
+                    <section *ngIf="matches$ | async as matches">
+                        <section *ngFor="let match of matches">
+                            <ion-button type="button" expand="block" color="dark" [routerLink]="['/match', match.id]"
+                                class="ion-margin-vertical" *ngIf="!match.fullMatch && !match.playerOn">
+                                <ion-icon name="enter" class="ion-margin"></ion-icon>
+                                {{ match['date'].toDate() | date:'EEE dd/MM HH:mm' }} Hs.
+                                <ion-icon name="enter" class="ion-margin"></ion-icon>
+                            </ion-button>
+
+                            <ion-button type="button" expand="block" color="success" [routerLink]="['/match', match.id]"
+                                class="ion-margin-vertical" *ngIf="match.playerOn">
+                                <ion-icon name="checkmark-done-circle" class="ion-margin"></ion-icon>
+                                {{ match['date'].toDate() | date:'EEE dd/MM HH:mm' }} Hs.
+                                <ion-icon name="checkmark-done-circle" class="ion-margin"></ion-icon>
+                            </ion-button>
+
+                            <ion-button type="button" expand="block" color="danger" [routerLink]="['/match', match.id]"
+                                class="ion-margin-vertical" *ngIf="match.fullMatch && !match.playerOn">
+                                <ion-icon name="close-circle" class="ion-margin"></ion-icon>
+                                {{ match['date'].toDate() | date:'EEE dd/MM HH:mm' }} Hs.
+                                <ion-icon name="close-circle" class="ion-margin"></ion-icon>
+                            </ion-button>
+                        </section>
+
+                        <ion-button type="button" expand="block" color="light" class="ion-margin-vertical"
+                            *ngIf="matches.length === 0">
+                            <ion-icon name="sad" class="ion-margin"></ion-icon>
+                            No hay partido
+                            <ion-icon name="sad" class="ion-margin"></ion-icon>
+                        </ion-button>
+                    </section>
+                </ion-card-content>
+            </ion-card>
+
+            <news-card [news]="news$ | async" [admin]="player.roles.includes('admin')"></news-card>
+
+        </ion-grid>
+        <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="ion-margin"
+            *ngIf="player.roles.includes('admin')">
+            <ion-fab-button>
+                <ion-icon name="add-circle-outline"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-list side="top">
+                <ion-fab-button [routerLink]="['/add-game']">
+                    <ion-icon name="football"></ion-icon>
+                </ion-fab-button>
+                <ion-fab-button [routerLink]="['/add-news']">
+                    <ion-icon name="information-circle"></ion-icon>
+                </ion-fab-button>
+                <ion-fab-button [routerLink]="['/new-season']" *ngIf="player.roles.includes('superadmin')">
+                    <ion-icon name="refresh"></ion-icon>
+                </ion-fab-button>
+            </ion-fab-list>
+        </ion-fab>
+    </ion-content>
+</ng-container>

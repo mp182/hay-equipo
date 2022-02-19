@@ -1,0 +1,28 @@
+.login-container {
+  align-items: center;
+  display: flex;
+  height: 99%;
+
+  .login-logo {
+    background-color: whitesmoke;
+    border-radius: 50%;
+    box-shadow: 0px 0px 5px whitesmoke;
+    height: 30vh;
+    margin: 0 auto;
+    margin-bottom: 16px;
+    width: 30vh;
+  }
+
+  .login-google-button {
+    --background: #4285f4;
+    font-size: 14px;
+  }
+
+  .g-logo {
+    border-radius: 3px !important;
+    height: 26px;
+    margin-right: 24px;
+    overflow: hidden;
+    width: 26px;
+  }
+}

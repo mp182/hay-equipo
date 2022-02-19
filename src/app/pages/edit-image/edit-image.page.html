@@ -1,0 +1,49 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="dashboard"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Cambiar Foto</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" *ngIf="player$ | async as player">
+    <ion-grid fixed>
+        <ion-row class="ion-justify-content-center">
+            <ion-col size-md="8">
+                <ion-img [src]="player.image" class="currentImage" appSafeImage></ion-img>
+            </ion-col>
+        </ion-row>
+
+        <ion-list class="ion-margin-vertical">
+            <ion-card *ngIf="loading">
+                <ion-item lines="none">
+                    <ion-icon name="cloud-upload" slot="start"></ion-icon>
+                    <ion-progress-bar type="indeterminate"></ion-progress-bar>
+                    <ion-spinner slot="end"></ion-spinner>
+                </ion-item>
+            </ion-card>
+            <ion-item lines="none" *ngIf="!loading">
+                <ion-icon name="image" slot="start"></ion-icon>
+                <ion-label>
+                    <p>Eligí una foto
+                        <ion-icon name="arrow-down-circle-outline"></ion-icon>
+                    </p>
+                    <input type="file" (change)="detectFiles($event)">
+                </ion-label>
+                <ion-button [disabled]="!selectedFiles" (click)="uploadSingle(player.id)" slot="end">
+                    <ion-icon name="checkmark"></ion-icon>
+                </ion-button>
+            </ion-item>
+            <ion-item lines="none" *ngIf="!loading">
+                <ion-icon name="camera" slot="start"></ion-icon>
+                <ion-label>
+                    <h2>Sacate una selfie</h2>
+                </ion-label>
+                <ion-button (click)="takePicture(player.id)" slot="end">
+                    <ion-icon name="open"></ion-icon>
+                </ion-button>
+            </ion-item>
+        </ion-list>
+    </ion-grid>
+</ion-content>

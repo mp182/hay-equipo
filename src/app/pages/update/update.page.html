@@ -1,0 +1,29 @@
+<ion-header>
+    <ion-toolbar color="warning">
+        <ion-title>Actualizar App</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+    <ion-card>
+        <ion-card-header>
+            <ion-card-subtitle>Actualización</ion-card-subtitle>
+            <ion-card-title>✨ Novedades</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+            <ion-list>
+                <ion-item class="ion-margin-vertical ion-text-justify" *ngFor="let item of (news$ | async)">
+                    <ion-icon name="football" slot="start"></ion-icon>
+                    <p>{{ item.description }}</p>
+                </ion-item>
+            </ion-list>
+        </ion-card-content>
+    </ion-card>
+
+    <ion-button class="ion-padding" type="submit" expand="block" (click)="updateApp()">
+        Actualizar
+    </ion-button>
+
+</ion-content>

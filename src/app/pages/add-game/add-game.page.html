@@ -1,0 +1,43 @@
+<ion-header>
+    <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="dashboard"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Agregar Partido</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    <form class="form" [formGroup]="matchForm" (ngSubmit)="addMatch(matchForm.value)">
+
+        <ion-item>
+            <ion-label position="floating" color="primary">Fecha</ion-label>
+            <ion-datetime cancelText="Cancelar" doneText="Aceptar" display-format="DDD D, MMM - YYYY"
+                formControlName="date" monthShortNames="ene, feb, mar, abr, may, jun, jul, ago, sep, oct, nov, dic"
+                dayShortNames="dom, lun, mar, mie, jue, vie, sab"></ion-datetime>
+        </ion-item>
+        <ion-item>
+            <ion-label position="floating" color="primary">Hora</ion-label>
+            <ion-datetime cancelText="Cancelar" doneText="Aceptar" display-format="HH:mm" picker-format="HH:mm"
+                formControlName="time" value="19:00"></ion-datetime>
+        </ion-item>
+
+        <ion-item>
+            <ion-label position="floating" color="primary">Cantidad de Jugadores</ion-label>
+            <ion-select formControlName="maxPlayers" interface="action-sheet" cancelText="Cancelar"
+                [interfaceOptions]="maxPlayerPopoverOptions">
+                <ion-select-option value="12">12</ion-select-option>
+                <ion-select-option value="10">10</ion-select-option>
+            </ion-select>
+        </ion-item>
+
+        <ion-item>
+            <ion-label position="floating" color="primary">Lugar</ion-label>
+            <ion-input type="text" formControlName="location"></ion-input>
+        </ion-item>
+
+        <ion-button class="ion-margin-vertical" type="submit" expand="block" [disabled]="!matchForm.valid">Agregar
+        </ion-button>
+
+    </form>
+</ion-content>

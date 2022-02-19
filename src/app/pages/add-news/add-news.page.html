@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+          <ion-back-button defaultHref="dashboard"></ion-back-button>
+      </ion-buttons>
+      <ion-title>Agregar Novedad</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form class="form" [formGroup]="newsForm" (ngSubmit)="addNews(newsForm.value)">
+
+      <ion-item>
+          <ion-label position="floating" color="primary">Descripción</ion-label>
+          <ion-input type="text" formControlName="description"></ion-input>
+      </ion-item>
+
+      <ion-button class="ion-margin-vertical" type="submit" expand="block" [disabled]="!newsForm.valid">Agregar</ion-button>
+
+  </form>
+</ion-content>
