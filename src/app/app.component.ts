@@ -53,9 +53,4 @@ export class AppComponent {
     this.menuCtrl.close();
   }
 
-  editImage() {
-    this.router.navigate(['edit-image']);
-    this.menuCtrl.close();
-  }
-
 }

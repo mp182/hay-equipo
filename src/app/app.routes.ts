@@ -8,14 +8,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login.page').then(m => m.LoginPage)
   },
   {
-    path: 'register',
-    loadComponent: () => import('./pages/register/register.page').then(m => m.RegisterPage)
-  },
-  {
-    path: 'reset-password',
-    loadComponent: () => import('./pages/reset-password/reset-password.page').then(m => m.ResetPasswordPage)
-  },
-  {
     path: 'no-internet',
     loadComponent: () => import('./pages/no-internet/no-internet.page').then(m => m.NoInternetPage)
   },
@@ -42,10 +34,6 @@ export const routes: Routes = [
       {
         path: 'add-game',
         loadComponent: () => import('./pages/add-game/add-game.page').then(m => m.AddGamePage)
-      },
-      {
-        path: 'edit-image',
-        loadComponent: () => import('./pages/edit-image/edit-image.page').then(m => m.EditImagePage)
       },
       {
         path: 'add-friend/:id',
@@ -91,4 +79,6 @@ export const routes: Routes = [
       },
     ]
   },
+  // Cualquier ruta desconocida (por ej. las viejas /register o /reset-password) va al login.
+  { path: '**', redirectTo: 'login' },
 ];

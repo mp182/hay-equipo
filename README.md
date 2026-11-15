@@ -26,7 +26,7 @@ firebase deploy --only firestore:rules
 
 - Los roles (`admin`, `superadmin`) se asignan a mano en el campo `roles` del documento `users/{uid}`.
 - Para el aviso de "nueva versión", cargar un documento en la colección `version` con el campo `version` (y las novedades en `news`).
-- Las fotos de perfil necesitan Firebase Storage (plan Blaze); las reglas están en `storage.rules`.
+- El proyecto está en el plan gratuito (Spark): no usa Storage ni Cloud Functions. Los avatares son la foto de Google o el avatar por defecto.
 
 ## Contact 📧
 

@@ -40,8 +40,8 @@ describe('date helpers', () => {
 });
 
 describe('firebaseErrors', () => {
-  it('traduce las credenciales inválidas de Firebase v9+', () => {
-    expect(firebaseErrors('auth/invalid-credential')).toBe('Credenciales Inválidas.');
+  it('avisa si el navegador bloqueó el popup', () => {
+    expect(firebaseErrors('auth/popup-blocked')).toContain('ventanas emergentes');
   });
 
   it('no muestra error si se cierra el popup de Google', () => {

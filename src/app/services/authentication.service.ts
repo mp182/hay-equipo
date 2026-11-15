@@ -1,13 +1,9 @@
 import { EnvironmentInjector, Injectable, inject, runInInjectionContext } from '@angular/core';
-import {
-  Auth, GoogleAuthProvider, UserCredential, createUserWithEmailAndPassword, getAdditionalUserInfo,
-  sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut, user
-} from '@angular/fire/auth';
+import { Auth, GoogleAuthProvider, getAdditionalUserInfo, signInWithPopup, signOut, user } from '@angular/fire/auth';
 import { Firestore, doc, docData, setDoc } from '@angular/fire/firestore';
 import { Observable, of, shareReplay, switchMap, map } from 'rxjs';
 
 import { Player } from '../models/player.interface';
-import { LoadingService } from './loading.service';
 import { titleCase } from '../helpers/string.helpers';
 
 export const DEFAULT_AVATAR = 'assets/img/playerAvatar.png';
@@ -18,7 +14,6 @@ export class AuthenticationService {
   private readonly auth = inject(Auth);
   private readonly firestore = inject(Firestore);
   private readonly injector = inject(EnvironmentInjector);
-  private readonly loadingService = inject(LoadingService);
 
   /** El jugador logueado (documento `users/{uid}`), o `null` si no hay sesión. */
   readonly player$: Observable<Player | null> = user(this.auth).pipe(
@@ -33,29 +28,6 @@ export class AuthenticationService {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  async registerUser(value: { email: string; password: string; nickname: string; }): Promise<UserCredential> {
-    await this.loadingService.showLoading();
-    try {
-      const credential = await this.run(() => createUserWithEmailAndPassword(this.auth, value.email, value.password));
-      await this.run(() => setDoc(doc(this.firestore, `users/${credential.user.uid}`), {
-        nickname: titleCase(value.nickname),
-        roles: ['player'],
-        played: 0,
-        won: 0,
-        image: DEFAULT_AVATAR,
-        email: value.email,
-        googleLogin: false,
-      }));
-      return credential;
-    } finally {
-      await this.loadingService.hideLoading();
-    }
-  }
-
-  loginUser(value: { email: string; password: string; }) {
-    return this.run(() => signInWithEmailAndPassword(this.auth, value.email, value.password));
-  }
-
   logoutUser() {
     return this.run(() => signOut(this.auth));
   }
@@ -64,10 +36,6 @@ export class AuthenticationService {
   async userDetails() {
     await this.auth.authStateReady();
     return this.auth.currentUser;
-  }
-
-  resetPassword(value: { email: string; }) {
-    return this.run(() => sendPasswordResetEmail(this.auth, value.email));
   }
 
   async loginWithGoogle() {

@@ -159,10 +159,6 @@ export class DbService {
     return this.run(() => updateDoc(doc(this.firestore, `users/${playerId}`), { nickname }));
   }
 
-  updateImage(imgURL: string, playerId: string) {
-    return this.run(() => updateDoc(doc(this.firestore, `users/${playerId}`), { image: imgURL }));
-  }
-
   /** Jugadores que entran en el ranking (más de 10 partidos jugados). */
   getPlayers(): Observable<Player[]> {
     return this.run(() => collectionData(

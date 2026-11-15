@@ -4,7 +4,6 @@ export const environment = {
     apiKey: 'AIzaSyA0mfbf-rXceqZlNHG3ymH9SUgxRs8OFT8',
     authDomain: 'hay-equipo-v2.firebaseapp.com',
     projectId: 'hay-equipo-v2',
-    storageBucket: 'hay-equipo-v2.firebasestorage.app',
     messagingSenderId: '329316252230',
     appId: '1:329316252230:web:45be7506b889de0b522847'
   },

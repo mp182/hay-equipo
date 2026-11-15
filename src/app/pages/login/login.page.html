@@ -9,40 +9,15 @@
                 </ion-col>
             </ion-row>
 
-            <form class="ion-margin-vertical" [formGroup]="loginForm" (ngSubmit)="loginUser()">
+            <ion-button type="button" (click)="loginWithGoogle()" expand="block"
+                class="login-google-button ion-margin-vertical">
+                <img src="assets/img/g-logo.png" class="g-logo" alt="">
+                Ingresar con Google
+            </ion-button>
 
-                <ion-item>
-                    <ion-input label="Email" labelPlacement="floating" color="primary" type="email"
-                        autocomplete="email" formControlName="email"></ion-input>
-                </ion-item>
-
-                <ion-item>
-                    <ion-input label="Contraseña" labelPlacement="floating" color="primary" type="password"
-                        autocomplete="current-password" formControlName="password"></ion-input>
-                </ion-item>
-
-                <ion-button class="ion-margin-vertical" type="submit" [disabled]="loginForm.invalid" expand="block">
-                    Ingresar
-                </ion-button>
-
-                <ion-button type="button" (click)="loginWithGoogle()" expand="block"
-                    class="login-google-button ion-margin-vertical">
-                    <img src="assets/img/g-logo.png" class="g-logo" alt="">
-                    Ingresar con Google
-                </ion-button>
-
-                <p class="error-message">{{ errorMessage() }}</p>
-            </form>
-
-            <br>
-
-            <p>
-                No tenés cuenta? <a class="link" routerLink="/register">Crear una cuenta.</a>
-            </p>
-
-            <p>
-                Olvidaste tu contraseña? <a class="link" routerLink="/reset-password">Recuperar contraseña.</a>
-            </p>
+            @if (errorMessage()) {
+                <p class="error-message ion-text-center">{{ errorMessage() }}</p>
+            }
 
         </ion-grid>
 
