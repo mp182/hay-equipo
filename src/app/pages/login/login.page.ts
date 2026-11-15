@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, IonButton, IonCol, IonContent, IonGrid, IonRow, MenuController } from '@ionic/angular';
-import { Subscription, filter, take } from 'rxjs';
+import { IonContent, MenuController } from '@ionic/angular';
 
+import { LogoMarkComponent } from 'src/app/components/logo-mark/logo-mark.component';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { firebaseErrors } from '../../helpers/firebaseErrors';
 
@@ -10,55 +10,71 @@ import { firebaseErrors } from '../../helpers/firebaseErrors';
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  imports: [IonButton, IonCol, IonContent, IonGrid, IonRow],
+  imports: [IonContent, LogoMarkComponent],
 })
 export class LoginPage {
 
-  private readonly alertController = inject(AlertController);
   private readonly authService = inject(AuthenticationService);
   private readonly menuCtrl = inject(MenuController);
   private readonly router = inject(Router);
 
-  private playerSubscription?: Subscription;
-
+  /** Mientras se revisa si ya hay una sesión iniciada, no se muestra el botón. */
+  readonly checkingSession = signal(true);
+  /** Mientras se abre Google o se termina el ingreso. */
+  readonly signingIn = signal(false);
   readonly errorMessage = signal('');
 
-  ionViewWillEnter() {
+  async ionViewWillEnter() {
     this.menuCtrl.enable(false);
+    this.checkingSession.set(true);
 
-    // Si ya hay una sesión iniciada, preguntamos si quiere seguir con esa cuenta.
-    this.playerSubscription = this.authService.player$.pipe(
-      filter(user => !!user),
-      take(1)
-    ).subscribe(async user => {
-      const alert = await this.alertController.create({
-        header: 'Sesión iniciada!',
-        subHeader: 'Continuar...?',
-        backdropDismiss: false,
-        message: `Iniciaste sesión como ${user!.nickname}.`,
-        buttons: [
-          { text: 'No', handler: () => { this.authService.logoutUser(); } },
-          { text: 'Si, soy yo', handler: () => { this.router.navigateByUrl('dashboard'); } }
-        ]
-      });
-      await alert.present();
-    });
+    try {
+      // Si se volvió de la página de Google (plan B cuando el popup está bloqueado), terminamos el ingreso.
+      const cameBackFromGoogle = await this.authService.completeRedirectLogin();
+      // Con la sesión ya iniciada, entramos directo sin preguntar.
+      if (cameBackFromGoogle || await this.authService.isLoggedIn()) {
+        await this.goToDashboard();
+        return;
+      }
+    } catch (err: any) {
+      this.showError(err);
+    }
+
+    this.checkingSession.set(false);
   }
 
   ionViewWillLeave() {
-    this.playerSubscription?.unsubscribe();
     this.menuCtrl.enable(true);
   }
 
   async loginWithGoogle() {
-    this.playerSubscription?.unsubscribe();
-    this.errorMessage.set('');
-    try {
-      await this.authService.loginWithGoogle();
-      await this.router.navigateByUrl('dashboard');
-    } catch (err: any) {
-      this.errorMessage.set(firebaseErrors(err?.code));
+    if (this.signingIn()) {
+      return;
     }
+    this.errorMessage.set('');
+    this.signingIn.set(true);
+
+    try {
+      const loggedIn = await this.authService.loginWithGoogle();
+      if (loggedIn) {
+        await this.goToDashboard();
+      }
+      // Si no, la app se fue a la página de Google y va a volver recargando el login.
+    } catch (err: any) {
+      this.showError(err);
+    } finally {
+      this.signingIn.set(false);
+    }
+  }
+
+  private goToDashboard() {
+    return this.router.navigateByUrl('dashboard', { replaceUrl: true });
+  }
+
+  private showError(err: any) {
+    // Se vacía primero para que el mensaje se vuelva a crear y repita la animación.
+    this.errorMessage.set('');
+    setTimeout(() => this.errorMessage.set(firebaseErrors(err?.code)));
   }
 
 }

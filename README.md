@@ -28,6 +28,13 @@ firebase deploy --only firestore:rules
 - Para el aviso de "nueva versión", cargar un documento en la colección `version` con el campo `version` (y las novedades en `news`).
 - El proyecto está en el plan gratuito (Spark): no usa Storage ni Cloud Functions. Los avatares son la foto de Google o el avatar por defecto.
 
+## Marca 🎨
+
+- **Isotipo:** dos "¡" que son dos jugadores, uno de cada equipo (blanco y negro). Fuentes en [`branding/`](branding/) y como componente en `src/app/components/logo-mark` (con animación para el loader).
+- **Colores:** verde cancha `#14532d`, blanco `#ffffff`, negro `#0b0b0b` y crema `#f4efe3` para fondos claros.
+- **Tipografía:** Bricolage Grotesque 800 para el nombre y títulos de marca; Exo 2 para el resto de la app.
+- **Íconos:** `branding/app-icon.svg` es la fuente de los PNG de `src/assets/icons` (íconos de la PWA, con margen para la versión "maskable") y `src/assets/img/favicon.svg` la del favicon.
+
 ## Contact 📧
 
 If you want to contact me you can reach me at <mpablo182@gmail.com>.

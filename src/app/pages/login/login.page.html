@@ -1,25 +1,39 @@
-<ion-content class="ion-padding">
-    <div class="login-container">
+<ion-content class="login">
+    <!-- Líneas de la cancha de fondo -->
+    <svg class="pitch" viewBox="0 0 200 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect x="12" y="12" width="176" height="376" />
+        <line x1="12" y1="200" x2="188" y2="200" />
+        <circle cx="100" cy="200" r="36" />
+        <circle cx="100" cy="200" r="2" class="dot" />
+        <rect x="52" y="12" width="96" height="44" />
+        <rect x="78" y="12" width="44" height="16" />
+        <rect x="52" y="344" width="96" height="44" />
+        <rect x="78" y="372" width="44" height="16" />
+    </svg>
 
-        <ion-grid fixed>
+    <main class="login-layout">
+        <app-logo-mark class="brand-mark" />
+        <h1 class="brand-name">Hay<br>Equipo!</h1>
+        <p class="brand-tagline">Organizá el fulbito con tus amigos</p>
 
-            <ion-row class="ion-justify-content-center">
-                <ion-col size-md="8">
-                    <img src="assets/img/appicon.png" class="login-logo" alt="Hay Equipo!">
-                </ion-col>
-            </ion-row>
+        @if (!checkingSession()) {
+            <button type="button" class="google-button" (click)="loginWithGoogle()" [disabled]="signingIn()"
+                [attr.aria-busy]="signingIn()">
+                @if (signingIn()) {
+                    <span class="spinner" aria-hidden="true"></span>
+                    Conectando…
+                } @else {
+                    <img src="assets/img/g-logo.png" alt="" width="20" height="20">
+                    Continuar con Google
+                }
+            </button>
+        } @else {
+            <!-- Mismo alto que el botón, para que nada salte mientras se revisa la sesión -->
+            <div class="google-button-placeholder" aria-hidden="true"></div>
+        }
 
-            <ion-button type="button" (click)="loginWithGoogle()" expand="block"
-                class="login-google-button ion-margin-vertical">
-                <img src="assets/img/g-logo.png" class="g-logo" alt="">
-                Ingresar con Google
-            </ion-button>
-
-            @if (errorMessage()) {
-                <p class="error-message ion-text-center">{{ errorMessage() }}</p>
-            }
-
-        </ion-grid>
-
-    </div>
+        @if (errorMessage()) {
+            <p class="error-message" role="alert">{{ errorMessage() }}</p>
+        }
+    </main>
 </ion-content>

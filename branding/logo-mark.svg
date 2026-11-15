@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Isotipo de Hay Equipo!: dos "¡" que son dos jugadores (blanco y negro). -->
+  <defs>
+    <g id="player"><circle cx="0" cy="-30" r="10.5"/><path d="M-6.5 -11 Q0 -14 6.5 -11 L10.5 31 Q0 40 -10.5 31 Z"/></g>
+  </defs>
+  <g transform="translate(36 52) rotate(4)" fill="#ffffff"><use href="#player"/></g>
+  <g transform="translate(66 50) rotate(-4)" fill="#0b0b0b"><use href="#player"/></g>
+</svg>

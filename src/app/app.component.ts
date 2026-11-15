@@ -7,7 +7,9 @@ import {
   IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar, MenuController
 } from '@ionic/angular';
 
+import { LogoMarkComponent } from './components/logo-mark/logo-mark.component';
 import { AuthenticationService } from './services/authentication.service';
+import { LoadingService } from './services/loading.service';
 import { ConnectionService } from './services/connection.service';
 import { SafeImageDirective } from './directives/safe-image.directive';
 import { registerIcons } from './icons';
@@ -17,7 +19,7 @@ import { registerIcons } from './icons';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   imports: [
-    AsyncPipe, RouterLink, SafeImageDirective,
+    AsyncPipe, RouterLink, SafeImageDirective, LogoMarkComponent,
     IonApp, IonAvatar, IonChip, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu,
     IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar
   ],
@@ -27,6 +29,8 @@ export class AppComponent {
   private readonly authService = inject(AuthenticationService);
   private readonly menuCtrl = inject(MenuController);
   private readonly router = inject(Router);
+
+  readonly loadingService = inject(LoadingService);
 
   readonly user$ = this.authService.player$;
 

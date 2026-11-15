@@ -3,6 +3,7 @@ import {
   IonAvatar, IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent,
   IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonTitle, IonToolbar, MenuController
 } from '@ionic/angular';
+import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -10,7 +11,7 @@ import { environment } from 'src/environments/environment';
   templateUrl: './about.page.html',
   styleUrls: ['./about.page.scss'],
   imports: [
-    IonAvatar, IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent,
+    SafeImageDirective, IonAvatar, IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent,
     IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonTitle, IonToolbar
   ],
 })

@@ -1,25 +1,24 @@
-import { Injectable, inject } from '@angular/core';
-import { LoadingController } from '@ionic/angular';
+import { Injectable, computed, signal } from '@angular/core';
 
+/**
+ * Loader global de la app. El overlay (el logo con los jugadores saltando) lo dibuja `AppComponent`.
+ * Lleva la cuenta de cuántas tareas están en curso para no cerrarlo antes de tiempo.
+ */
 @Injectable({ providedIn: 'root' })
 export class LoadingService {
 
-  private readonly loadingController = inject(LoadingController);
-  private loading?: Promise<HTMLIonLoadingElement>;
+  private readonly pending = signal(0);
 
-  async showLoading(message = 'Trabajando ...') {
-    // Si ya hay uno abierto lo cerramos, para no dejar loaders colgados.
-    await this.hideLoading();
-    this.loading = this.loadingController.create({ message });
-    await (await this.loading).present();
+  readonly message = signal('Trabajando...');
+  readonly visible = computed(() => this.pending() > 0);
+
+  async showLoading(message = 'Trabajando...') {
+    this.message.set(message);
+    this.pending.update(count => count + 1);
   }
 
   async hideLoading() {
-    const loading = this.loading;
-    this.loading = undefined;
-    if (loading) {
-      await (await loading).dismiss();
-    }
+    this.pending.update(count => Math.max(0, count - 1));
   }
 
 }

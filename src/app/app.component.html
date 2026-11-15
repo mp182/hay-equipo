@@ -44,4 +44,11 @@
         </ion-menu>
         <ion-router-outlet id="main"></ion-router-outlet>
     </ion-split-pane>
+
+    @if (loadingService.visible()) {
+        <div class="app-loader" role="status" aria-live="polite">
+            <app-logo-mark [animated]="true" class="app-loader-mark" label="Cargando" />
+            <p>{{ loadingService.message() }}</p>
+        </div>
+    }
 </ion-app>

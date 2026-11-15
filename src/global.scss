@@ -30,6 +30,13 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Exo+2&display=swap');
 
+/* Tipografía de marca (logo y títulos destacados). Se empaqueta con la app para que funcione offline. */
+@import "@fontsource/bricolage-grotesque/latin-800.css";
+
 :root {
   --ion-font-family: 'Exo 2', sans-serif;
+  --brand-font: 'Bricolage Grotesque', 'Exo 2', sans-serif;
+  --brand-green: #14532d;
+  --brand-black: #0b0b0b;
+  --brand-cream: #f4efe3;
 }

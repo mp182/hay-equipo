@@ -1,28 +1,141 @@
-.login-container {
-  align-items: center;
+.login {
+  --background: var(--brand-green);
+}
+
+.pitch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  rect,
+  line,
+  circle {
+    fill: none;
+    stroke: #ffffff;
+    stroke-opacity: 0.16;
+    stroke-width: 1.5;
+  }
+
+  .dot {
+    fill: #ffffff;
+    fill-opacity: 0.16;
+  }
+}
+
+.login-layout {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 24px) 28px calc(env(safe-area-inset-bottom) + 24px);
   display: flex;
-  height: 99%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ffffff;
+}
 
-  .login-logo {
-    background-color: whitesmoke;
-    border-radius: 50%;
-    box-shadow: 0px 0px 5px whitesmoke;
-    height: 30vh;
-    margin: 0 auto;
-    margin-bottom: 16px;
-    width: 30vh;
+.brand-mark {
+  width: 112px;
+  height: 112px;
+  margin-bottom: 20px;
+}
+
+.brand-name {
+  margin: 0;
+  font-family: var(--brand-font);
+  font-weight: 800;
+  font-size: 52px;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.brand-tagline {
+  margin: 16px 0 40px;
+  font-size: 17px;
+  color: #bbf7d0;
+}
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  height: 52px;
+  border: 0;
+  border-radius: 26px;
+  background: #ffffff;
+  color: #1f1f1f;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.15s ease;
+
+  &:hover {
+    background: #f1f5f1;
   }
 
-  .login-google-button {
-    --background: #4285f4;
-    font-size: 14px;
+  &:active {
+    transform: scale(0.98);
   }
 
-  .g-logo {
-    border-radius: 3px !important;
-    height: 26px;
-    margin-right: 24px;
-    overflow: hidden;
-    width: 26px;
+  &:focus-visible {
+    outline: 3px solid #bbf7d0;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    cursor: progress;
+    background: #ffffff;
+    transform: none;
+  }
+}
+
+.google-button-placeholder {
+  height: 52px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(20, 83, 45, 0.25);
+  border-top-color: var(--brand-green);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.error-message {
+  margin: 16px 0 0;
+  max-width: 320px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffffff;
+  font-size: 14px;
+  text-align: center;
+  animation: shake 0.35s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error-message,
+  .spinner {
+    animation: none;
   }
 }

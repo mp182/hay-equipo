@@ -6,3 +6,32 @@
     --background: darkgreen;
     --color: white;
 }
+
+.app-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 30000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(20, 83, 45, 0.88);
+    color: #ffffff;
+    animation: loader-in 0.15s ease-out;
+
+    p {
+        margin: 0;
+        font-size: 15px;
+    }
+}
+
+.app-loader-mark {
+    width: 72px;
+    height: 72px;
+}
+
+@keyframes loader-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
