@@ -5,35 +5,34 @@
     </ion-buttons>
     <ion-title>Anotá a un amigo</ion-title>
     <ion-buttons slot="secondary">
-      <ion-menu-button autoHide="false"></ion-menu-button>
+      <ion-menu-button [autoHide]="false"></ion-menu-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
 
-  <ion-searchbar placeholder="Buscar..." animated (ionInput)="filterList($event)"></ion-searchbar>
+  <ion-searchbar placeholder="Buscar..." [animated]="true" (ionInput)="filterList($event)"></ion-searchbar>
 
-  <ion-list *ngIf="filteredList?.length > 0">
-    <ion-item *ngFor="let player of orderByNickname(filteredList)" (click)="addFriendAlert(player)">
-      <ion-avatar slot="start" *ngIf="player.image; else imagenGenerica">
-        <img [src]="player.image" appSafeImage>
-      </ion-avatar>
-      <ng-template #imagenGenerica>
-        <ion-avatar slot="start">
-          <img src="../../../assets/img/playerAvatar.png">
-        </ion-avatar>
-      </ng-template>
-      <h6>{{ player.nickname }}</h6>
-      <div class="flex-container" slot="end">
-        <ion-badge color="primary" class="ion-margin-end">{{ player.played }}</ion-badge>
-        <ion-badge color="success" class="ion-margin-end">{{ player.won }}</ion-badge>
-        <h5>
-          <app-score [player]="player"></app-score>
-        </h5>
-      </div>
-    </ion-item>
-  </ion-list>
+  @if (filteredList().length > 0) {
+    <ion-list>
+      @for (player of filteredList(); track player.id) {
+        <ion-item button (click)="addFriendAlert(player)">
+          <ion-avatar slot="start">
+            <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="Avatar">
+          </ion-avatar>
+          <h6>{{ player.nickname }}</h6>
+          <div class="flex-container" slot="end">
+            <ion-badge color="primary" class="ion-margin-end">{{ player.played }}</ion-badge>
+            <ion-badge color="success" class="ion-margin-end">{{ player.won }}</ion-badge>
+            <h5>
+              <app-score [player]="player"></app-score>
+            </h5>
+          </div>
+        </ion-item>
+      }
+    </ion-list>
+  }
 
 </ion-content>
 

@@ -1,20 +1,26 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import {
+  IonBackButton, IonButtons, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonGrid, IonHeader,
+  IonIcon, IonItem, IonLabel, IonMenuButton, IonTabBar, IonTabButton, IonTabs, IonText, IonTitle, IonToolbar
+} from '@ionic/angular';
+
 import { RankingTabsService } from 'src/app/services/ranking-tabs.service';
 
 @Component({
   selector: 'app-ranking-tabs',
   templateUrl: './ranking-tabs.page.html',
   styleUrls: ['./ranking-tabs.page.scss'],
+  imports: [
+    IonBackButton, IonButtons, IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonGrid, IonHeader,
+    IonIcon, IonItem, IonLabel, IonMenuButton, IonTabBar, IonTabButton, IonTabs, IonText, IonTitle, IonToolbar
+  ],
 })
 export class RankingTabsPage {
 
-  constructor(
-    public rankingTabsService: RankingTabsService
-  ) { }
+  readonly rankingTabsService = inject(RankingTabsService);
 
   ionViewWillLeave() {
-    if (this.rankingTabsService.playersSubscription) { this.rankingTabsService.playersSubscription.unsubscribe(); }
-    this.rankingTabsService.tabsNavigation = false;
+    this.rankingTabsService.tabsNavigation.set(false);
   }
 
 }

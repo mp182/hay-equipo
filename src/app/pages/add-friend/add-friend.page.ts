@@ -1,112 +1,73 @@
-import { Component } from '@angular/core';
-import { LoadingService } from 'src/app/services/loading.service';
+import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import {
+  AlertController, IonAvatar, IonBackButton, IonBadge, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonList,
+  IonMenuButton, IonSearchbar, IonTitle, IonToolbar, ModalController, SearchbarCustomEvent
+} from '@ionic/angular';
+import { combineLatest, map } from 'rxjs';
+
+import { ScoreComponent } from 'src/app/components/score/score.component';
+import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
 import { Player } from 'src/app/models/player.interface';
 import { DbService } from 'src/app/services/db.service';
-import { Subscription } from 'rxjs';
-import { ModalController, AlertController } from '@ionic/angular';
-import { AddNewFriendPage } from '../add-new-friend/add-new-friend.page';
+import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { AddNewFriendPage } from '../add-new-friend/add-new-friend.page';
 
 @Component({
   selector: 'app-add-friend',
   templateUrl: './add-friend.page.html',
   styleUrls: ['./add-friend.page.scss'],
+  imports: [
+    SafeImageDirective, ScoreComponent,
+    IonAvatar, IonBackButton, IonBadge, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonList, IonMenuButton,
+    IonSearchbar, IonTitle, IonToolbar
+  ],
 })
 export class AddFriendPage {
 
-  matchId: string;
-  friends: Player[];
-  filteredList: Player[];
-  subscribers: Player[];
-  friendsSubscription: Subscription;
-  subscribersSubscription: Subscription;
-  alertPresent = false;
+  private readonly alertController = inject(AlertController);
+  private readonly dbService = inject(DbService);
+  private readonly loadingService = inject(LoadingService);
+  private readonly modalController = inject(ModalController);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  constructor(
-    private loadingService: LoadingService,
-    private activatedRoute: ActivatedRoute,
-    private dbService: DbService,
-    private modalController: ModalController,
-    private alertController: AlertController,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
+  readonly matchId = inject(ActivatedRoute).snapshot.paramMap.get('id')!;
 
-  ionViewWillEnter() {
-    this.loadingService.showLoading();
+  /** Amigos que todavía no están anotados en este partido, ordenados por apodo. */
+  private readonly friends = toSignal(
+    combineLatest([this.dbService.getSubscribers(this.matchId), this.dbService.getFriends()]).pipe(
+      map(([subscribers, friends]) => friends
+        .filter(friend => !subscribers.some(s => s.id === friend.id))
+        .sort((a, b) => a.nickname.localeCompare(b.nickname, 'es', { sensitivity: 'base' })))
+    ),
+    { initialValue: [] as Player[] }
+  );
 
-    this.matchId = this.activatedRoute.snapshot.paramMap.get('id');
+  readonly searchTerm = signal('');
 
-    this.subscribersSubscription = this.dbService.getSubscribers(this.matchId).subscribe(players => {
-      if (players) {
-        this.subscribers = players;
+  readonly filteredList = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    return term
+      ? this.friends().filter(friend => friend.nickname?.toLowerCase().includes(term))
+      : this.friends();
+  });
 
-        this.friendsSubscription = this.dbService.getFriends().subscribe(friends => {
-          if (friends) {
-            this.friends = friends.filter(f => !players.some(p => p.id === f.id));
-            this.initializeItems();
-          }
-        });
-      }
-    });
-  }
-
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
-  }
-
-  ionViewWillLeave() {
-    if (this.subscribersSubscription) { this.subscribersSubscription.unsubscribe(); }
-    if (this.friendsSubscription) { this.friendsSubscription.unsubscribe(); }
+  filterList(event: SearchbarCustomEvent) {
+    this.searchTerm.set(event.detail.value ?? '');
   }
 
   async addNewFriend() {
-    (await this.modalController.create(
-      {
-        component: AddNewFriendPage,
-        componentProps: {
-          matchId: this.matchId,
-          friends: this.friends,
-        }
-      }
-    )).present();
-  }
-
-  initializeItems(): void {
-    this.filteredList = this.friends;
-  }
-
-  filterList(evt: any) {
-    this.initializeItems();
-
-    const searchTerm = evt.srcElement.value;
-
-    if (!searchTerm) {
-      return;
-    }
-
-    this.filteredList = this.filteredList.filter(currentGoal => {
-      if (currentGoal.nickname && searchTerm) {
-        if (currentGoal.nickname.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1) {
-          return true;
-        }
-        return false;
+    const modal = await this.modalController.create({
+      component: AddNewFriendPage,
+      componentProps: {
+        matchId: this.matchId,
+        friends: this.friends(),
       }
     });
-  }
-
-  orderByNickname(players: Player[]): Player[] {
-    if (players) {
-      return players.sort((player1, player2) => {
-        const nickname1 = player1.nickname.toLowerCase();
-        const nickname2 = player2.nickname.toLowerCase();
-
-        if (nickname1 < nickname2) { return -1; }
-        if (nickname1 > nickname2) { return 1; }
-        return 0;
-      });
-    }
+    await modal.present();
   }
 
   async addFriendAlert(player: Player) {
@@ -116,35 +77,24 @@ export class AddFriendPage {
       message: `Vas a anotar a ${player.nickname}.`,
       mode: 'ios',
       buttons: [
-        {
-          text: 'No, le erré 👎',
-          role: 'cancel',
-          cssClass: 'secondary',
-          handler: () => {
-            this.alertPresent = false;
-          }
-        }, {
-          text: 'Si 😀',
-          handler: () => {
-            this.loadingService.showLoading();
-            this.dbService.joinMatch(player, this.matchId)
-              .then(() => {
-                this.alertPresent = false;
-                this.loadingService.hideLoading();
-                this.toastService.successToast('Amigo anotado!');
-                this.router.navigateByUrl(`match/${this.matchId}`);
-              })
-              .catch(() => {
-                this.alertPresent = false;
-                this.toastService.errorToast();
-                this.loadingService.hideLoading();
-              });
-          }
-        }
+        { text: 'No, le erré 👎', role: 'cancel', cssClass: 'secondary' },
+        { text: 'Si 😀', handler: () => { this.joinMatch(player); } }
       ]
     });
+    await alert.present();
+  }
 
-    await alert.present().then(() => this.alertPresent = true);
+  private async joinMatch(player: Player) {
+    await this.loadingService.showLoading();
+    try {
+      await this.dbService.joinMatch(player, this.matchId);
+      await this.toastService.successToast('Amigo anotado!');
+      await this.router.navigateByUrl(`match/${this.matchId}`);
+    } catch {
+      await this.toastService.errorToast();
+    } finally {
+      await this.loadingService.hideLoading();
+    }
   }
 
 }

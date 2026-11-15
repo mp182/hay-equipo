@@ -1,108 +1,100 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonReorderGroup } from '@ionic/angular';
-import { ItemReorderEventDetail } from '@ionic/core';
-import { combineLatest, Subscription } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import {
+  IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonReorder, IonReorderGroup,
+  IonTitle, IonToolbar, ReorderEndCustomEvent
+} from '@ionic/angular';
+import { Subscription, combineLatest } from 'rxjs';
+
 import { Player } from 'src/app/models/player.interface';
 import { DbService } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
 
+/** Ítem de la lista reordenable: un jugador o un separador de equipo. */
+type ReorderItem = (Player & { flag?: false }) | { nickname: string; flag: true; id: string };
+
+const WHITE_FLAG: ReorderItem = { id: '__white', nickname: '⚪ Remera Blanca ⚪', flag: true };
+const BLACK_FLAG: ReorderItem = { id: '__black', nickname: '⚫ Remera Negra ⚫', flag: true };
+
 @Component({
   selector: 'app-change-teams',
   templateUrl: './change-teams.page.html',
   styleUrls: ['./change-teams.page.scss'],
+  imports: [
+    IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonReorder, IonReorderGroup,
+    IonTitle, IonToolbar
+  ],
 })
-export class ChangeTeamsPage implements OnInit, OnDestroy {
+export class ChangeTeamsPage implements OnInit {
 
-  matchId: string;
-  remeraNegraIndex: number;
-  reorderItems: any[];
-  subscription: Subscription;
-  teamBlack: Player[];
-  teamWhite: Player[];
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly db = inject(DbService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly loadingService = inject(LoadingService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  @ViewChild(IonReorderGroup) reorderGroup: IonReorderGroup;
+  readonly matchId = this.activatedRoute.snapshot.paramMap.get('id')!;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private db: DbService,
-    private loadingService: LoadingService,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
+  /** Lista: [Remera Blanca, ...blancos, Remera Negra, ...negros]. */
+  readonly reorderItems = signal<ReorderItem[]>([]);
+
+  private teamWhite: Player[] = [];
+  private teamBlack: Player[] = [];
+  private subscription?: Subscription;
 
   ngOnInit() {
-    this.loadingService.showLoading();
-
-    this.matchId = this.activatedRoute.snapshot.paramMap.get('id');
-
-    this.subscription = combineLatest(
-      [this.db.getTeamBlack(this.matchId), this.db.getTeamWhite(this.matchId)]
-    ).pipe(
-      tap(result => {
-        this.teamBlack = result[0];
-        this.teamWhite = result[1];
-        this.reorderItems = this.teamWhite.concat(this.teamBlack);
-        this.reorderItems.splice(0, 0, { nickname: '⚪ Remera Blanca ⚪', flag: true });
-        this.remeraNegraIndex = ((this.teamBlack.length + this.teamWhite.length) / 2) + 1;
-        this.reorderItems.splice(this.remeraNegraIndex, 0, { nickname: '⚫ Remera Negra ⚫', flag: true });
-      })
-    ).subscribe();
+    this.subscription = combineLatest([this.db.getTeamWhite(this.matchId), this.db.getTeamBlack(this.matchId)])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([teamWhite, teamBlack]) => {
+        this.teamWhite = teamWhite;
+        this.teamBlack = teamBlack;
+        this.reorderItems.set([WHITE_FLAG, ...teamWhite, BLACK_FLAG, ...teamBlack]);
+      });
   }
 
-  ngOnDestroy(): void {
-    if (this.subscription) { this.subscription.unsubscribe(); }
+  /** Solo se puede guardar si los separadores siguen en su lugar (equipos del mismo tamaño). */
+  canSave() {
+    const items = this.reorderItems();
+    return items.length > 0 && items[0] === WHITE_FLAG && items[this.teamWhite.length + 1] === BLACK_FLAG;
   }
 
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
+  doReorder(ev: ReorderEndCustomEvent) {
+    this.reorderItems.set(ev.detail.complete([...this.reorderItems()]));
   }
 
-  doReorder(ev: CustomEvent<ItemReorderEventDetail>) {
-    this.reorderItems = ev.detail.complete(this.reorderItems);
-  }
+  async changeTeams() {
+    this.subscription?.unsubscribe();
 
-  changeTeams(): void {
-    this.loadingService.showLoading();
-    this.subscription.unsubscribe();
+    const items = this.reorderItems();
+    const blackIndex = items.indexOf(BLACK_FLAG);
+    const newTeamWhite = items.slice(1, blackIndex) as Player[];
+    const newTeamBlack = items.slice(blackIndex + 1) as Player[];
 
-    let newTeamWhite = this.reorderItems.slice(1, this.teamBlack.length + 1);
-    let newTeamBlack = this.reorderItems.slice(this.teamBlack.length + 2, this.reorderItems.length);
+    const movedToWhite = newTeamWhite.filter(player => !this.teamWhite.some(p => p.id === player.id));
+    const movedToBlack = newTeamBlack.filter(player => !this.teamBlack.some(p => p.id === player.id));
 
-    let teamWhitePlayersToAdd = [];
-
-    newTeamWhite.forEach(player => {
-      if (!this.teamWhite.some(x => x.id === player.id)) {
-        teamWhitePlayersToAdd.push(player);
-      }
-    });
-
-    let teamBlackPlayersToAdd = [];
-
-    newTeamBlack.forEach(player => {
-      if (!this.teamBlack.some(x => x.id === player.id)) {
-        teamBlackPlayersToAdd.push(player);
-      }
-    });
-
-    let promises: Promise<void>[] = [];
-
-    teamWhitePlayersToAdd.forEach(player => {
-      promises.push(this.db.deleteFromTeam(player.id, this.matchId, 'teamBlack'));
-      promises.push(this.db.addToTeam(player, this.matchId, 'teamWhite'));
-    });
-
-    teamBlackPlayersToAdd.forEach(player => {
-      promises.push(this.db.deleteFromTeam(player.id, this.matchId, 'teamWhite'));
-      promises.push(this.db.addToTeam(player, this.matchId, 'teamBlack'));
-    });
-
-    Promise.all(promises).finally(() => {
-      this.router.navigate(['/match', this.matchId]);
-      this.toastService.successToast('Se cambiaron los equipos!');
-    });
+    await this.loadingService.showLoading();
+    try {
+      await Promise.all([
+        ...movedToWhite.flatMap(player => [
+          this.db.deleteFromTeam(player.id, this.matchId, 'teamBlack'),
+          this.db.addToTeam(player, this.matchId, 'teamWhite'),
+        ]),
+        ...movedToBlack.flatMap(player => [
+          this.db.deleteFromTeam(player.id, this.matchId, 'teamWhite'),
+          this.db.addToTeam(player, this.matchId, 'teamBlack'),
+        ]),
+      ]);
+      await this.toastService.successToast('Se cambiaron los equipos!');
+    } catch {
+      await this.toastService.errorToast();
+    } finally {
+      await this.loadingService.hideLoading();
+      await this.router.navigate(['/match', this.matchId]);
+    }
   }
 
 }

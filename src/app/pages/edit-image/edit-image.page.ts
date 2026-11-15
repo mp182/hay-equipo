@@ -1,125 +1,88 @@
-import { Component } from '@angular/core';
-import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
-import { AngularFireStorage } from '@angular/fire/storage';
-import { Observable, Subscription } from 'rxjs';
-import { finalize } from 'rxjs/operators';
-import { DbService } from 'src/app/services/db.service';
-import { AuthenticationService } from 'src/app/services/authentication.service';
-import { Player } from 'src/app/models/player.interface';
-import { ToastService } from 'src/app/services/toast.service';
-import { LoadingService } from 'src/app/services/loading.service';
+import { AsyncPipe } from '@angular/common';
+import { Component, EnvironmentInjector, inject, runInInjectionContext, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Storage, getDownloadURL, ref, uploadBytes, uploadString } from '@angular/fire/storage';
+import {
+  IonBackButton, IonButton, IonButtons, IonCard, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonItem,
+  IonLabel, IonList, IonProgressBar, IonRow, IonSpinner, IonTitle, IonToolbar
+} from '@ionic/angular';
+
+import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
+import { AuthenticationService } from 'src/app/services/authentication.service';
+import { DbService } from 'src/app/services/db.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-edit-image',
   templateUrl: './edit-image.page.html',
   styleUrls: ['./edit-image.page.scss'],
+  imports: [
+    AsyncPipe, SafeImageDirective,
+    IonBackButton, IonButton, IonButtons, IonCard, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonItem,
+    IonLabel, IonList, IonProgressBar, IonRow, IonSpinner, IonTitle, IonToolbar
+  ],
 })
 export class EditImagePage {
 
-  selectedFiles: any;
-  player$: Observable<Player>;
-  downloadURL: Observable<string>;
-  subscription: Subscription;
-  imageSubscription: Subscription;
-  playerSubscription: Subscription;
-  loading = false;
+  private readonly db = inject(DbService);
+  private readonly injector = inject(EnvironmentInjector);
+  private readonly router = inject(Router);
+  private readonly storage = inject(Storage);
+  private readonly toastService = inject(ToastService);
 
-  constructor(
-    private auth: AuthenticationService,
-    private db: DbService,
-    private loadingService: LoadingService,
-    private router: Router,
-    private storage: AngularFireStorage,
-    private toastService: ToastService
-  ) { }
+  readonly player$ = inject(AuthenticationService).player$;
 
-  ionViewWillEnter() {
-    this.loading = false;
-    this.loadingService.showLoading();
-    this.player$ = this.auth.player$;
-  }
+  readonly selectedFile = signal<File | null>(null);
+  readonly loading = signal(false);
 
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
-  }
-
-  ionViewWillLeave() {
-    if (this.subscription) { this.subscription.unsubscribe(); }
-    if (this.imageSubscription) { this.imageSubscription.unsubscribe(); }
-    if (this.playerSubscription) { this.playerSubscription.unsubscribe(); }
-  }
-
-  detectFiles(event: any) {
-    this.selectedFiles = event.target.files;
+  detectFiles(event: Event) {
+    this.selectedFile.set((event.target as HTMLInputElement).files?.item(0) ?? null);
   }
 
   uploadSingle(playerId: string) {
-    const file = this.selectedFiles.item(0);
-    this.updateImageFromFile(file, playerId);
-  }
-
-  updateImageFromFile(file: any, playerId: string) {
-    this.loading = true;
-
-    const filePath = playerId + '.jpg';
-
-    const fileRef = this.storage.ref(filePath);
-
-    const task = fileRef.put(file);
-
-    this.subscription = task.snapshotChanges().pipe(
-      finalize(() => {
-        this.playerSubscription = this.player$.subscribe(player => {
-          setTimeout(() => {
-            const fileNewRef = this.storage.ref(`${playerId}.jpg`);
-            this.downloadURL = fileNewRef.getDownloadURL();
-            this.imageSubscription = this.downloadURL.subscribe(resp => {
-              this.db.updateImage(resp, player.id);
-              this.toastService.successToast('Cambiaste tu avatar!');
-              this.router.navigateByUrl('dashboard');
-            });
-          }, 15000);
-        });
-      })
-    ).subscribe();
+    const file = this.selectedFile();
+    if (file) {
+      this.uploadAvatar(playerId, path => uploadBytes(ref(this.storage, path), file, { contentType: file.type }));
+    }
   }
 
   async takePicture(playerId: string) {
-    const originalPhoto = await Camera.getPhoto({
-      quality: 50,
-      allowEditing: true,
-      resultType: CameraResultType.Base64,
-      source: CameraSource.Camera
-    });
-
-    this.uploadFileFromCam(originalPhoto, playerId);
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 50,
+        allowEditing: true,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Camera
+      });
+      await this.uploadAvatar(playerId, path => uploadString(
+        ref(this.storage, path), photo.base64String!, 'base64', { contentType: `image/${photo.format}` }
+      ));
+    } catch (err: any) {
+      // Si el usuario cierra la cámara no mostramos error.
+      if (!String(err?.message ?? '').toLowerCase().includes('cancel')) {
+        await this.toastService.errorToast();
+      }
+    }
   }
 
-  uploadFileFromCam(image: Photo, playerId: string) {
-    this.loading = true;
-
-    const filePath = `${playerId}`;
-
-    const fileRef = this.storage.ref(filePath);
-
-    const task = fileRef.putString(image.base64String, 'base64');
-
-    this.subscription = task.snapshotChanges().pipe(
-      finalize(() => {
-        this.playerSubscription = this.player$.subscribe(player => {
-          setTimeout(() => {
-            const fileNewRef = this.storage.ref(`${playerId}`);
-            this.downloadURL = fileNewRef.getDownloadURL();
-            this.imageSubscription = this.downloadURL.subscribe(resp => {
-              this.db.updateImage(resp, player.id);
-              this.toastService.successToast('Cambiaste tu avatar!');
-              this.router.navigateByUrl('dashboard');
-            });
-          }, 15000);
-        });
-      })
-    ).subscribe();
+  /** Sube la imagen a `avatars/{playerId}` y guarda la URL en el jugador. */
+  private async uploadAvatar(playerId: string, upload: (path: string) => Promise<unknown>) {
+    this.loading.set(true);
+    try {
+      const path = `avatars/${playerId}`;
+      await runInInjectionContext(this.injector, () => upload(path));
+      const url = await runInInjectionContext(this.injector, () => getDownloadURL(ref(this.storage, path)));
+      await this.db.updateImage(url, playerId);
+      await this.toastService.successToast('Cambiaste tu avatar!');
+      await this.router.navigateByUrl('dashboard');
+    } catch (err) {
+      console.error(err);
+      await this.toastService.errorToast();
+    } finally {
+      this.loading.set(false);
+      this.selectedFile.set(null);
+    }
   }
 
 }

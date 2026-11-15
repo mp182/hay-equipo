@@ -1,16 +1,11 @@
-import { enableProdMode } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-
-import { AppModule } from './app/app.module';
-import { environment } from './environments/environment';
-
+import { bootstrapApplication } from '@angular/platform-browser';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
-if (environment.production) {
-  enableProdMode();
-}
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
 
-platformBrowserDynamic().bootstrapModule(AppModule)
+bootstrapApplication(AppComponent, appConfig)
   .catch(err => console.error(err));
 
+// Necesario para que @capacitor/camera funcione en la web (PWA).
 defineCustomElements(window);

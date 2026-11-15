@@ -7,43 +7,49 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding" *ngIf="player$ | async as player">
-    <ion-grid fixed>
-        <ion-row class="ion-justify-content-center">
-            <ion-col size-md="8">
-                <ion-img [src]="player.image" class="currentImage" appSafeImage></ion-img>
-            </ion-col>
-        </ion-row>
+@if (player$ | async; as player) {
+    <ion-content class="ion-padding">
+        <ion-grid fixed>
+            <ion-row class="ion-justify-content-center">
+                <ion-col size-md="8">
+                    <img [src]="player.image || 'assets/img/playerAvatar.png'" class="currentImage" appSafeImage
+                        alt="Tu foto" loading="lazy">
+                </ion-col>
+            </ion-row>
 
-        <ion-list class="ion-margin-vertical">
-            <ion-card *ngIf="loading">
-                <ion-item lines="none">
-                    <ion-icon name="cloud-upload" slot="start"></ion-icon>
-                    <ion-progress-bar type="indeterminate"></ion-progress-bar>
-                    <ion-spinner slot="end"></ion-spinner>
-                </ion-item>
-            </ion-card>
-            <ion-item lines="none" *ngIf="!loading">
-                <ion-icon name="image" slot="start"></ion-icon>
-                <ion-label>
-                    <p>Eligí una foto
-                        <ion-icon name="arrow-down-circle-outline"></ion-icon>
-                    </p>
-                    <input type="file" (change)="detectFiles($event)">
-                </ion-label>
-                <ion-button [disabled]="!selectedFiles" (click)="uploadSingle(player.id)" slot="end">
-                    <ion-icon name="checkmark"></ion-icon>
-                </ion-button>
-            </ion-item>
-            <ion-item lines="none" *ngIf="!loading">
-                <ion-icon name="camera" slot="start"></ion-icon>
-                <ion-label>
-                    <h2>Sacate una selfie</h2>
-                </ion-label>
-                <ion-button (click)="takePicture(player.id)" slot="end">
-                    <ion-icon name="open"></ion-icon>
-                </ion-button>
-            </ion-item>
-        </ion-list>
-    </ion-grid>
-</ion-content>
+            <ion-list class="ion-margin-vertical">
+                @if (loading()) {
+                    <ion-card>
+                        <ion-item lines="none">
+                            <ion-icon name="cloud-upload" slot="start"></ion-icon>
+                            <ion-progress-bar type="indeterminate"></ion-progress-bar>
+                            <ion-spinner slot="end"></ion-spinner>
+                        </ion-item>
+                    </ion-card>
+                } @else {
+                    <ion-item lines="none">
+                        <ion-icon name="image" slot="start"></ion-icon>
+                        <ion-label>
+                            <p>Elegí una foto
+                                <ion-icon name="arrow-down-circle-outline"></ion-icon>
+                            </p>
+                            <input type="file" accept="image/*" (change)="detectFiles($event)">
+                        </ion-label>
+                        <ion-button [disabled]="!selectedFile()" (click)="uploadSingle(player.id)" slot="end">
+                            <ion-icon name="checkmark"></ion-icon>
+                        </ion-button>
+                    </ion-item>
+                    <ion-item lines="none">
+                        <ion-icon name="camera" slot="start"></ion-icon>
+                        <ion-label>
+                            <h2>Sacate una selfie</h2>
+                        </ion-label>
+                        <ion-button (click)="takePicture(player.id)" slot="end">
+                            <ion-icon name="open"></ion-icon>
+                        </ion-button>
+                    </ion-item>
+                }
+            </ion-list>
+        </ion-grid>
+    </ion-content>
+}

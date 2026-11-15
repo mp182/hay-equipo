@@ -1,48 +1,55 @@
-import { Component } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
-import { DbService } from 'src/app/services/db.service';
-import { AuthenticationService } from 'src/app/services/authentication.service';
-import { ToastService } from 'src/app/services/toast.service';
-import { LoadingService } from 'src/app/services/loading.service';
+import { Component, inject } from '@angular/core';
+import { AbstractControl, FormControl, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import {
+  IonBackButton, IonButton, IonButtons, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+} from '@ionic/angular';
+
+import { AuthenticationService } from 'src/app/services/authentication.service';
+import { DbService } from 'src/app/services/db.service';
+import { LoadingService } from 'src/app/services/loading.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { titleCase } from '../../helpers/string.helpers';
+
+function noWhitespaceValidator(control: AbstractControl<string>): ValidationErrors | null {
+  return (control.value || '').trim().length === 0 ? { whitespace: true } : null;
+}
 
 @Component({
   selector: 'app-change-nickname',
   templateUrl: './change-nickname.page.html',
   styleUrls: ['./change-nickname.page.scss'],
+  imports: [
+    ReactiveFormsModule,
+    IonBackButton, IonButton, IonButtons, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+  ],
 })
 export class ChangeNicknamePage {
 
-  nickname = new FormControl('', Validators.compose([Validators.minLength(3), Validators.required, this.noWhitespaceValidator]));
+  private readonly authService = inject(AuthenticationService);
+  private readonly dbService = inject(DbService);
+  private readonly loadingService = inject(LoadingService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  constructor(
-    private authService: AuthenticationService,
-    private dbService: DbService,
-    private loadingService: LoadingService,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
+  readonly nickname = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.minLength(3), noWhitespaceValidator]
+  });
 
-  async updateNickname(nickname: string) {
-    this.loadingService.showLoading();
-
-    const player = this.authService.userDetails();
-
-    this.dbService.updateNickname(nickname.trim(), (await player).uid)
-      .then(() => {
-        this.loadingService.hideLoading();
-        this.toastService.successToast('Cambiaste tu apodo!');
-        this.router.navigateByUrl('dashboard');
-      }, () => {
-        this.loadingService.hideLoading();
-        this.toastService.errorToast();
-      });
-  }
-
-  private noWhitespaceValidator(control: FormControl) {
-    const isWhitespace = (control.value || '').trim().length === 0;
-    const isValid = !isWhitespace;
-    return isValid ? null : { whitespace: true };
+  async updateNickname() {
+    await this.loadingService.showLoading();
+    try {
+      const user = await this.authService.userDetails();
+      await this.dbService.updateNickname(titleCase(this.nickname.value), user!.uid);
+      this.nickname.reset();
+      await this.toastService.successToast('Cambiaste tu apodo!');
+      await this.router.navigateByUrl('dashboard');
+    } catch {
+      await this.toastService.errorToast();
+    } finally {
+      await this.loadingService.hideLoading();
+    }
   }
 
 }

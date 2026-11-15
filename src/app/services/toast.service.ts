@@ -1,52 +1,29 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ToastService {
 
-  constructor(private toastController: ToastController) { }
+  private readonly toastController = inject(ToastController);
 
-  async successToast(text: string) {
-    const toast = await this.toastController.create({
-      message: text,
-      duration: 2500,
-      buttons: [
-        {
-          text: '✔️',
-          role: 'cancel',
-        }
-      ]
-    });
-    toast.present();
+  successToast(text: string) {
+    return this.show(text, '✔️');
   }
 
-  async errorToast() {
-    const toast = await this.toastController.create({
-      message: 'Ups! Algo salió mal...',
-      duration: 2500,
-      buttons: [
-        {
-          text: '❌',
-          role: 'cancel',
-        }
-      ]
-    });
-    toast.present();
+  errorToast() {
+    return this.show('Ups! Algo salió mal...', '❌');
   }
 
-  async infoToast(text: string) {
+  infoToast(text: string) {
+    return this.show(text, 'ℹ️');
+  }
+
+  private async show(message: string, buttonText: string) {
     const toast = await this.toastController.create({
-      message: text,
+      message,
       duration: 2500,
-      buttons: [
-        {
-          text: 'ℹ️',
-          role: 'cancel',
-        }
-      ]
+      buttons: [{ text: buttonText, role: 'cancel' }]
     });
-    toast.present();
+    await toast.present();
   }
 }

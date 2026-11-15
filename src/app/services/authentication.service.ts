@@ -1,123 +1,107 @@
-import { Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/firestore';
-import { Platform } from '@ionic/angular';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { Observable, of } from 'rxjs';
-import { Player } from '../models/player.interface';
-import { switchMap, map } from 'rxjs/operators';
-import { LoadingService } from './loading.service';
-import { titleCase } from './../helpers/string.helpers';
-import * as firebase from 'firebase/app';
+import { EnvironmentInjector, Injectable, inject, runInInjectionContext } from '@angular/core';
+import {
+  Auth, GoogleAuthProvider, UserCredential, createUserWithEmailAndPassword, getAdditionalUserInfo,
+  sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut, user
+} from '@angular/fire/auth';
+import { Firestore, doc, docData, setDoc } from '@angular/fire/firestore';
+import { Observable, of, shareReplay, switchMap, map } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root'
-})
+import { Player } from '../models/player.interface';
+import { LoadingService } from './loading.service';
+import { titleCase } from '../helpers/string.helpers';
+
+export const DEFAULT_AVATAR = 'assets/img/playerAvatar.png';
+
+@Injectable({ providedIn: 'root' })
 export class AuthenticationService {
 
-  player$: Observable<Player>;
+  private readonly auth = inject(Auth);
+  private readonly firestore = inject(Firestore);
+  private readonly injector = inject(EnvironmentInjector);
+  private readonly loadingService = inject(LoadingService);
 
-  constructor(
-    private loadingService: LoadingService,
-    private afs: AngularFirestore,
-    public afAuth: AngularFireAuth,
-    private platform: Platform
-  ) {
-    this.player$ = this.afAuth.authState.pipe(
-      switchMap(user => {
-        if (user) {
-          return this.afs.doc<Player>(`users/${user.uid}`).valueChanges()
-            .pipe(
-              map(data => {
-                const id = user.uid;
-                return { id, ...data };
-              })
-            );
-        } else {
-          return of(null);
-        }
-      })
-    );
-  }
+  /** El jugador logueado (documento `users/{uid}`), o `null` si no hay sesión. */
+  readonly player$: Observable<Player | null> = user(this.auth).pipe(
+    switchMap(currentUser => {
+      if (!currentUser) {
+        return of(null);
+      }
+      return this.run(() => docData(doc(this.firestore, `users/${currentUser.uid}`))).pipe(
+        map(data => ({ ...(data as Player), id: currentUser.uid }))
+      );
+    }),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
-  registerUser(value: { email: string; password: string; nickname: string; }) {
-    this.loadingService.showLoading();
-
-    return new Promise<any>((resolve, reject) => {
-      this.afAuth.createUserWithEmailAndPassword(value.email, value.password)
-        .then(
-          res => {
-            const data = {
-              nickname: titleCase(value.nickname),
-              roles: ['player'],
-              played: 0,
-              won: 0,
-              image: '../../../assets/img/playerAvatar.png',
-              email: value.email,
-              googleLogin: false,
-            };
-            this.afs.collection('users').doc(res.user.uid).set(data);
-            this.loadingService.hideLoading();
-            return resolve(res);
-          },
-          err => {
-            this.loadingService.hideLoading();
-            return reject(err);
-          });
-    });
+  async registerUser(value: { email: string; password: string; nickname: string; }): Promise<UserCredential> {
+    await this.loadingService.showLoading();
+    try {
+      const credential = await this.run(() => createUserWithEmailAndPassword(this.auth, value.email, value.password));
+      await this.run(() => setDoc(doc(this.firestore, `users/${credential.user.uid}`), {
+        nickname: titleCase(value.nickname),
+        roles: ['player'],
+        played: 0,
+        won: 0,
+        image: DEFAULT_AVATAR,
+        email: value.email,
+        googleLogin: false,
+      }));
+      return credential;
+    } finally {
+      await this.loadingService.hideLoading();
+    }
   }
 
   loginUser(value: { email: string; password: string; }) {
-    return new Promise<any>((resolve, reject) => {
-      this.afAuth.signInWithEmailAndPassword(value.email, value.password)
-        .then(
-          res => resolve(res),
-          err => reject(err)
-        );
-    });
+    return this.run(() => signInWithEmailAndPassword(this.auth, value.email, value.password));
   }
 
   logoutUser() {
-    return this.afAuth.signOut();
+    return this.run(() => signOut(this.auth));
   }
 
-  userDetails() {
-    return this.afAuth.currentUser;
+  /** Usuario de Firebase Auth actual (espera a que Auth termine de inicializar). */
+  async userDetails() {
+    await this.auth.authStateReady();
+    return this.auth.currentUser;
   }
 
   resetPassword(value: { email: string; }) {
-    return this.afAuth.sendPasswordResetEmail(value.email);
+    return this.run(() => sendPasswordResetEmail(this.auth, value.email));
   }
 
   async loginWithGoogle() {
-    this.platform.ready().then(async () => {
-      const userCredential = await this.afAuth.signInWithPopup(new firebase.default.auth.GoogleAuthProvider());
-      if (userCredential.additionalUserInfo.isNewUser) {
-        const data = {
-          nickname: titleCase(userCredential.user.displayName.split(' ')[0]),
-          roles: ['player'],
-          played: 0,
-          won: 0,
-          image: userCredential.user.photoURL,
-          email: userCredential.user.email,
-          googleLogin: true
-        };
-        this.afs.collection('users').doc(userCredential.user.uid).set(data);
-      }
-    });
+    const credential = await this.run(() => signInWithPopup(this.auth, new GoogleAuthProvider()));
+    if (getAdditionalUserInfo(credential)?.isNewUser) {
+      await this.run(() => setDoc(doc(this.firestore, `users/${credential.user.uid}`), {
+        nickname: titleCase(credential.user.displayName?.split(' ')[0] ?? 'Jugador'),
+        roles: ['player'],
+        played: 0,
+        won: 0,
+        image: credential.user.photoURL ?? DEFAULT_AVATAR,
+        email: credential.user.email,
+        googleLogin: true
+      }));
+    }
+    return credential;
   }
 
   saveFriendUser(player: Player, win: boolean) {
-    const data = {
+    return this.run(() => setDoc(doc(this.firestore, `users/${player.id}`), {
       nickname: titleCase(player.nickname),
       roles: ['player'],
       played: 1,
       won: win ? 1 : 0,
-      image: '../../../assets/img/playerAvatar.png',
+      image: DEFAULT_AVATAR,
       googleLogin: false,
-      friend: true
-    };
+      friend: true,
+      lastGames: player.lastGames ?? []
+    }));
+  }
 
-    this.afs.collection('users').doc(player.id).set(data);
+  /** AngularFire pide que las llamadas a Firebase se hagan dentro de un contexto de inyección. */
+  private run<T>(fn: () => T): T {
+    return runInInjectionContext(this.injector, fn);
   }
 
 }

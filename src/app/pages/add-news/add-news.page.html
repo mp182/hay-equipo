@@ -8,14 +8,16 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form class="form" [formGroup]="newsForm" (ngSubmit)="addNews(newsForm.value)">
+  <form class="form" [formGroup]="newsForm" (ngSubmit)="addNews()">
 
       <ion-item>
-          <ion-label position="floating" color="primary">Descripción</ion-label>
-          <ion-input type="text" formControlName="description"></ion-input>
+          <ion-input label="Descripción" labelPlacement="floating" color="primary" type="text"
+              formControlName="description"></ion-input>
       </ion-item>
 
-      <ion-button class="ion-margin-vertical" type="submit" expand="block" [disabled]="!newsForm.valid">Agregar</ion-button>
+      <ion-button class="ion-margin-vertical" type="submit" expand="block" [disabled]="newsForm.invalid">
+          Agregar
+      </ion-button>
 
   </form>
 </ion-content>

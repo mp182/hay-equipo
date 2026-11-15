@@ -1,26 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActionSheetController, Platform } from '@ionic/angular';
-import { timer } from 'rxjs';
-import { take } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class PwaService {
 
+  private readonly platform = inject(Platform);
+  private readonly actionSheetController = inject(ActionSheetController);
   private promptEvent: any;
 
-  constructor(
-    private platform: Platform,
-    public actionSheetController: ActionSheetController
-  ) { }
-
-  public initPwaPrompt() {
+  initPwaPrompt() {
     if (this.platform.is('android')) {
       window.addEventListener('beforeinstallprompt', (event: any) => {
         event.preventDefault();
         this.promptEvent = event;
-        this.openPromptComponent();
+        setTimeout(() => this.openPromptComponent(), 3000);
       });
     }
   }
@@ -42,9 +35,6 @@ export class PwaService {
         }
       ]
     });
-
-    timer(3000)
-      .pipe(take(1))
-      .subscribe(async () => await actionSheet.present());
+    await actionSheet.present();
   }
 }

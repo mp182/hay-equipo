@@ -7,6 +7,27 @@ This project was generated with [Ionic CLI](https://ionicframework.com/docs/cli)
 - [Angular](https://angular.io/)
 - [Firebase](https://firebase.google.com/)
 
+## Desarrollo 🛠️
+
+- Node 22+ (probado con Node 26) y `npm install`.
+- `npm start` levanta la app en http://localhost:4200.
+- `npm run build` genera la versión de producción en `www/` (con service worker / PWA).
+- `npm test` corre los tests (Vitest) y `npm run lint` el linter.
+
+Stack: Angular 21 (standalone + signals), Ionic 9, AngularFire 21 / Firebase 12, Capacitor 8.
+
+### Firebase
+
+El proyecto usa `hay-equipo-v2` (ver `.firebaserc` y `src/environments`). Las reglas de seguridad están en el repo:
+
+```bash
+firebase deploy --only firestore:rules
+```
+
+- Los roles (`admin`, `superadmin`) se asignan a mano en el campo `roles` del documento `users/{uid}`.
+- Para el aviso de "nueva versión", cargar un documento en la colección `version` con el campo `version` (y las novedades en `news`).
+- Las fotos de perfil necesitan Firebase Storage (plan Blaze); las reglas están en `storage.rules`.
+
 ## Contact 📧
 
 If you want to contact me you can reach me at <mpablo182@gmail.com>.

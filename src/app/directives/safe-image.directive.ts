@@ -1,18 +1,25 @@
-import { Directive, Input, ElementRef, HostListener } from '@angular/core';
+import { Directive, ElementRef, inject, input } from '@angular/core';
+import { DEFAULT_AVATAR } from '../services/authentication.service';
 
+/** Si la imagen no carga, muestra el avatar por defecto (o `imgSrc`). */
 @Directive({
-  selector: '[appSafeImage]'
+  selector: '[appSafeImage]',
+  host: {
+    '(error)': 'loadDefaultOnError()'
+  }
 })
 export class SafeImageDirective {
 
-  @Input() imgSrc: string;
+  readonly imgSrc = input<string>();
 
-  constructor(private elemRef: ElementRef) { }
+  private readonly elemRef = inject<ElementRef<HTMLImageElement>>(ElementRef);
 
-  @HostListener('error')
   loadDefaultOnError() {
-    const element: HTMLImageElement = this.elemRef.nativeElement as HTMLImageElement;
-    element.src = this.imgSrc || '../../../assets/img/playerAvatar.png';
+    const fallback = this.imgSrc() || DEFAULT_AVATAR;
+    const element = this.elemRef.nativeElement;
+    if (!element.src?.endsWith(fallback)) {
+      element.src = fallback;
+    }
   }
 
 }

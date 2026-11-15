@@ -1,52 +1,43 @@
-import { Component } from '@angular/core';
-import { LoadingService } from 'src/app/services/loading.service';
-import { DbService } from 'src/app/services/db.service';
-import { Player } from 'src/app/models/player.interface';
-import { Subscription } from 'rxjs';
-import { ToastService } from 'src/app/services/toast.service';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import {
+  IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle,
+  IonContent, IonHeader, IonTitle, IonToolbar
+} from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+
+import { DbService } from 'src/app/services/db.service';
+import { LoadingService } from 'src/app/services/loading.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-new-season',
   templateUrl: './new-season.page.html',
   styleUrls: ['./new-season.page.scss'],
+  imports: [
+    IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle,
+    IonContent, IonHeader, IonTitle, IonToolbar
+  ],
 })
 export class NewSeasonPage {
 
-  players: Player[];
-  playersSubscription: Subscription;
+  private readonly db = inject(DbService);
+  private readonly loadingService = inject(LoadingService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  constructor(
-    private db: DbService,
-    private loadingService: LoadingService,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
-
-  ionViewWillEnter() {
-    this.loadingService.showLoading();
-
-    this.playersSubscription = this.db.getAllPlayers().subscribe(players => {
-      if (players) {
-        this.players = players;
-      }
-    });
-  }
-
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
-  }
-
-  ionViewWillLeave() {
-    if (this.playersSubscription) { this.playersSubscription.unsubscribe(); }
-  }
-
-  newSeason() {
-    this.loadingService.showLoading();
-    this.db.startNewSeason(this.players);
-    this.router.navigateByUrl('dashboard');
-    this.toastService.successToast('Nueva Temporada 🔃✔');
-    this.loadingService.hideLoading();
+  async newSeason() {
+    await this.loadingService.showLoading();
+    try {
+      const players = await firstValueFrom(this.db.getAllPlayers());
+      await this.db.startNewSeason(players);
+      await this.router.navigateByUrl('dashboard');
+      await this.toastService.successToast('Nueva Temporada 🔃✔');
+    } catch {
+      await this.toastService.errorToast();
+    } finally {
+      await this.loadingService.hideLoading();
+    }
   }
 
 }

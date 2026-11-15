@@ -1,27 +1,31 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
+import {
+  IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonIcon, IonItem, IonSpinner, IonText
+} from '@ionic/angular';
+
 import { News } from 'src/app/models/news.interface';
 import { DbService } from 'src/app/services/db.service';
 
 @Component({
-  selector: 'news-card',
+  selector: 'app-news-card',
   templateUrl: './news-card.component.html',
   styleUrls: ['./news-card.component.scss'],
+  imports: [IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonIcon, IonItem, IonSpinner, IonText],
 })
 export class NewsCardComponent {
 
-  @Input() news: News[];
-  @Input() admin: boolean;
-  deleting: string;
+  readonly news = input<News[] | null>([]);
+  readonly admin = input(false);
 
-  constructor(
-    private dbService: DbService
-  ) { }
+  readonly deleting = signal('');
+
+  private readonly dbService = inject(DbService);
 
   delete(newsId: string) {
-    this.deleting = newsId;
+    this.deleting.set(newsId);
     setTimeout(() => {
       this.dbService.deleteCardNews(newsId)
-        .then(() => this.deleting = '');
+        .finally(() => this.deleting.set(''));
     }, 1500);
   }
 

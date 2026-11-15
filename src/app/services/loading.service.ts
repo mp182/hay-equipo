@@ -1,24 +1,25 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { LoadingController } from '@ionic/angular';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class LoadingService {
 
-  loading: Promise<HTMLIonLoadingElement>;
+  private readonly loadingController = inject(LoadingController);
+  private loading?: Promise<HTMLIonLoadingElement>;
 
-  constructor(private loadingController: LoadingController) { }
-
-  async showLoading(message?: string) {
-    this.loading = !!message
-      ? this.loadingController.create({ message })
-      : this.loadingController.create({ message: 'Trabajando ...' });
-    (await this.loading).present();
+  async showLoading(message = 'Trabajando ...') {
+    // Si ya hay uno abierto lo cerramos, para no dejar loaders colgados.
+    await this.hideLoading();
+    this.loading = this.loadingController.create({ message });
+    await (await this.loading).present();
   }
 
   async hideLoading() {
-    (await this.loading).dismiss();
+    const loading = this.loading;
+    this.loading = undefined;
+    if (loading) {
+      await (await loading).dismiss();
+    }
   }
 
 }

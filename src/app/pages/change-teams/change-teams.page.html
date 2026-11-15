@@ -8,25 +8,26 @@
 </ion-header>
 
 <ion-content>
-  <ion-reorder-group (ionItemReorder)="doReorder($event)" disabled="false">
-
-    <ion-item *ngFor="let item of reorderItems">
-      <ion-label *ngIf="item?.flag; else regularItem" class="ion-text-center" style="background-color: blue;">
-        <strong>{{ item.nickname }}</strong>
-      </ion-label>
-      <ng-template #regularItem>
-        <ion-label>
-          {{ item.nickname }}
-        </ion-label>
-      </ng-template>
-      <ion-reorder slot="end" *ngIf="!item?.flag"></ion-reorder>
-    </ion-item>
-
+  <ion-reorder-group (ionReorderEnd)="doReorder($event)" [disabled]="false">
+    @for (item of reorderItems(); track item.id) {
+      <ion-item>
+        @if (item.flag) {
+          <ion-label class="ion-text-center team-flag">
+            <strong>{{ item.nickname }}</strong>
+          </ion-label>
+        } @else {
+          <ion-label>{{ item.nickname }}</ion-label>
+          <ion-reorder slot="end"></ion-reorder>
+        }
+      </ion-item>
+    }
   </ion-reorder-group>
 </ion-content>
 
-<ion-footer *ngIf="reorderItems && reorderItems[0]?.flag && reorderItems[remeraNegraIndex]?.flag">
-  <ion-toolbar color="warning" mode="ios" (click)="changeTeams()">
-    <ion-title>Guardar</ion-title>
-  </ion-toolbar>
-</ion-footer>
+@if (canSave()) {
+  <ion-footer>
+    <ion-toolbar color="warning" mode="ios" (click)="changeTeams()">
+      <ion-title>Guardar</ion-title>
+    </ion-toolbar>
+  </ion-footer>
+}

@@ -1,20 +1,26 @@
-<ion-card *ngIf="news?.length > 0">
-  <ion-card-header>
-    <ion-card-title>
-      <ion-icon name="newspaper-outline"></ion-icon>
-      Info!
-    </ion-card-title>
-  </ion-card-header>
+@if (news()?.length) {
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="newspaper-outline"></ion-icon>
+        Info!
+      </ion-card-title>
+    </ion-card-header>
 
-  <ion-card-content>
-    <ion-item *ngFor="let item of news" lines="none">
-      <ion-icon name="information-circle" slot="start"></ion-icon>
-      <ion-text>{{ item.description }}</ion-text>
-      <ion-button slot="end" color="danger" shape="round" (click)="delete(item.id)"
-        *ngIf="deleting != item.id && admin">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
-      </ion-button>
-      <ion-spinner slot="end" *ngIf="deleting === item.id" name="lines-small"></ion-spinner>
-    </ion-item>
-  </ion-card-content>
-</ion-card>
+    <ion-card-content>
+      @for (item of news(); track item.id) {
+        <ion-item lines="none">
+          <ion-icon name="information-circle" slot="start"></ion-icon>
+          <ion-text>{{ item.description }}</ion-text>
+          @if (deleting() === item.id) {
+            <ion-spinner slot="end" name="lines-small"></ion-spinner>
+          } @else if (admin()) {
+            <ion-button slot="end" color="danger" shape="round" (click)="delete(item.id)">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          }
+        </ion-item>
+      }
+    </ion-card-content>
+  </ion-card>
+}

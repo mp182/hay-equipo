@@ -1,40 +1,30 @@
-import { Component } from '@angular/core';
-import { Player } from 'src/app/models/player.interface';
-import { LoadingService } from 'src/app/services/loading.service';
+import { Component, computed, inject } from '@angular/core';
+import {
+  IonAvatar, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonContent, IonGrid, IonItem,
+  IonList
+} from '@ionic/angular';
+
+import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
 import { RankingTabsService } from 'src/app/services/ranking-tabs.service';
 
 @Component({
   selector: 'app-ganados',
   templateUrl: './ganados.page.html',
   styleUrls: ['./ganados.page.scss'],
+  imports: [
+    SafeImageDirective,
+    IonAvatar, IonBadge, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonContent, IonGrid, IonItem,
+    IonList
+  ],
 })
 export class GanadosPage {
 
-  players: Player[];
+  private readonly rankingTabsService = inject(RankingTabsService);
 
-  constructor(
-    private loadingService: LoadingService,
-    private rankingTabsService: RankingTabsService
-  ) { }
+  readonly players = computed(() => [...this.rankingTabsService.players()].sort((a, b) => b.won - a.won));
 
   ionViewWillEnter() {
-    this.loadingService.showLoading();
-
-    this.players = this.rankingTabsService.players;
-
-    this.rankingTabsService.tabsNavigation = true;
-  }
-
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
-  }
-
-  orderByWon(players: Player[]): Player[] {
-    if (players) {
-      return players.sort((a: { won: number; }, b: { won: number; }) => {
-        return b.won - a.won;
-      });
-    }
+    this.rankingTabsService.tabsNavigation.set(true);
   }
 
 }

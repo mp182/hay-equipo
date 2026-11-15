@@ -1,64 +1,44 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import {
+  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+} from '@ionic/angular';
+
 import { AuthenticationService } from 'src/app/services/authentication.service';
-import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { firebaseErrors } from '../../helpers/firebaseErrors';
+import { EMAIL_PATTERN } from '../../helpers/string.helpers';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.page.html',
   styleUrls: ['./register.page.scss'],
+  imports: [
+    ReactiveFormsModule, RouterLink,
+    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+  ],
 })
-export class RegisterPage implements OnInit {
+export class RegisterPage {
 
-  registeForm: FormGroup;
+  private readonly authService = inject(AuthenticationService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  constructor(
-    private authService: AuthenticationService,
-    private formBuilder: FormBuilder,
-    private loadingService: LoadingService,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
+  readonly registerForm = inject(FormBuilder).nonNullable.group({
+    nickname: ['', [Validators.required, Validators.minLength(3)]],
+    email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+  });
 
-  ngOnInit() {
-    this.registeForm = this.formBuilder.group({
-      nickname: new FormControl('', Validators.compose([
-        Validators.minLength(3),
-        Validators.required
-      ])),
-      email: new FormControl('', Validators.compose([
-        Validators.required,
-        Validators.pattern('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$')
-      ])),
-      password: new FormControl('', Validators.compose([
-        Validators.minLength(6),
-        Validators.required
-      ])),
-    });
-  }
-
-  ionViewWillEnter() {
-    this.loadingService.showLoading();
-  }
-
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
-  }
-
-  register(value: { email: string; password: string; nickname: string; }) {
-    this.authService.registerUser(value)
-      .then(() => {
-        this.toastService.successToast('Cuenta creada!');
-        this.router.navigateByUrl('login');
-      }, () => {
-        this.toastService.errorToast();
-      });
-  }
-
-  navigateToLogin() {
-    this.router.navigateByUrl('login');
+  async register() {
+    try {
+      await this.authService.registerUser(this.registerForm.getRawValue());
+      await this.toastService.successToast('Cuenta creada!');
+      await this.router.navigateByUrl('dashboard');
+    } catch (err: any) {
+      await this.toastService.infoToast(firebaseErrors(err?.code));
+    }
   }
 
 }

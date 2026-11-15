@@ -1,16 +1,21 @@
-import { Component } from '@angular/core';
-import { MenuController } from '@ionic/angular';
+import { Component, inject } from '@angular/core';
+import {
+  IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
+  IonTitle, IonToolbar, MenuController
+} from '@ionic/angular';
 
 @Component({
   selector: 'app-no-internet',
   templateUrl: './no-internet.page.html',
   styleUrls: ['./no-internet.page.scss'],
+  imports: [
+    IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
+    IonTitle, IonToolbar
+  ],
 })
 export class NoInternetPage {
 
-  constructor(
-    private menuCtrl: MenuController
-  ) { }
+  private readonly menuCtrl = inject(MenuController);
 
   ionViewWillEnter() {
     this.menuCtrl.enable(false);

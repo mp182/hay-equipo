@@ -8,4 +8,8 @@ export interface Player {
     played: number;
     roles: string[];
     won: number;
+    /** Solo en los anotados de un partido: uid de quien anotó a este amigo ('' si se anotó solo). */
+    friendOf?: string;
+    /** `true` para los amigos que no tienen cuenta propia. */
+    friend?: boolean;
 }

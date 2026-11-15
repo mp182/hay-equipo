@@ -1,21 +1,26 @@
-import { Component, OnInit } from '@angular/core';
-import { MenuController } from '@ionic/angular';
+import { Component, inject } from '@angular/core';
+import {
+  IonAvatar, IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent,
+  IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonTitle, IonToolbar, MenuController
+} from '@ionic/angular';
 import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-about',
   templateUrl: './about.page.html',
   styleUrls: ['./about.page.scss'],
+  imports: [
+    IonAvatar, IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent,
+    IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonTitle, IonToolbar
+  ],
 })
-export class AboutPage implements OnInit {
+export class AboutPage {
 
-  public version = environment.version;
+  readonly version = environment.version;
 
-  constructor(
-    private menuCtrl: MenuController
-  ) { }
+  private readonly menuCtrl = inject(MenuController);
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.menuCtrl.close();
   }
 

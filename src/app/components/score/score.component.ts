@@ -1,30 +1,28 @@
-import { Component, OnInit, Input, SimpleChanges, OnChanges } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { Component, computed, input } from '@angular/core';
+import { IonIcon } from '@ionic/angular';
+
 import { Player } from 'src/app/models/player.interface';
+import { playerScore } from 'src/app/helpers/score.helpers';
 
 @Component({
   selector: 'app-score',
   templateUrl: './score.component.html',
   styleUrls: ['./score.component.scss'],
+  imports: [DecimalPipe, IonIcon],
 })
-export class ScoreComponent implements OnInit, OnChanges {
+export class ScoreComponent {
 
-  @Input() player: Player;
-  score: number;
+  readonly player = input.required<Pick<Player, 'played' | 'won'>>();
 
-  constructor() { }
+  readonly score = computed(() => playerScore(this.player()));
 
-  ngOnInit() {
-    this.calculateScore(this.player);
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    const player = changes.player.currentValue;
-    this.calculateScore(player);
-  }
-
-  private calculateScore(player: Player) {
-    this.score = player.played === 0 || player.won === 0 ? 0 : player.won * 100 / player.played;
-    this.score = player.played < 10 ? 50 : this.score;
-  }
+  readonly icon = computed(() => {
+    const score = this.score();
+    if (score >= 90) { return 'rocket-outline'; }
+    if (score >= 70) { return 'star'; }
+    if (score >= 40) { return 'star-half'; }
+    return 'star-outline';
+  });
 
 }

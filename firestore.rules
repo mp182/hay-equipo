@@ -1,0 +1,68 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function roles() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []);
+    }
+
+    function isAdmin() {
+      return signedIn() && roles().hasAny(['admin', 'superadmin']);
+    }
+
+    // Jugadores. Cada uno edita su propio documento (sin tocar sus roles).
+    // Los admins actualizan estadísticas y crean a los "amigos" sin cuenta.
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create: if (signedIn() && request.auth.uid == userId && request.resource.data.roles == ['player'])
+        || isAdmin();
+      allow update: if (signedIn() && request.auth.uid == userId
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['roles', 'played', 'won', 'lastGames']))
+        || isAdmin();
+      allow delete: if false;
+    }
+
+    match /matches/{matchId} {
+      allow read: if signedIn();
+      allow create, delete: if isAdmin();
+      // Cualquiera puede anotarse / bajarse (lista de jugadores); el resto solo los admins.
+      allow update: if isAdmin()
+        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playersList']));
+
+      match /subscribers/{playerId} {
+        allow read: if signedIn();
+        allow create: if signedIn();
+        allow delete: if signedIn() && (
+          playerId == request.auth.uid || resource.data.friendOf == request.auth.uid || isAdmin());
+        allow update: if isAdmin();
+      }
+
+      match /{team}/{playerId} {
+        allow read: if signedIn() && (team == 'teamWhite' || team == 'teamBlack');
+        allow write: if isAdmin() && (team == 'teamWhite' || team == 'teamBlack');
+      }
+    }
+
+    // Novedades del dashboard.
+    match /card-news/{newsId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Novedades de la versión y versión publicada: se cargan desde la consola.
+    match /news/{newsId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /version/{versionId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

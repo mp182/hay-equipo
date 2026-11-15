@@ -104,3 +104,6 @@ resources/ios/splash/Default-Portrait~ipad.png
 resources/ios/splash/Default@2x~iphone.png
 resources/ios/splash/Default@2x~universal~anyany.png
 resources/ios/splash/Default~iphone.png
+
+# Angular cache
+/.angular/cache

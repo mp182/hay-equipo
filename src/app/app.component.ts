@@ -1,59 +1,51 @@
-import { Component } from '@angular/core';
-import { Platform, MenuController } from '@ionic/angular';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { AsyncPipe } from '@angular/common';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink } from '@angular/router';
+import {
+  IonApp, IonAvatar, IonChip, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu,
+  IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar, MenuController
+} from '@ionic/angular';
+
 import { AuthenticationService } from './services/authentication.service';
-import { Player } from './models/player.interface';
-import { ConnectionService } from 'ng-connection-service';
-import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { ConnectionService } from './services/connection.service';
+import { SafeImageDirective } from './directives/safe-image.directive';
+import { registerIcons } from './icons';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss']
+  styleUrls: ['app.component.scss'],
+  imports: [
+    AsyncPipe, RouterLink, SafeImageDirective,
+    IonApp, IonAvatar, IonChip, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu,
+    IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar
+  ],
 })
 export class AppComponent {
 
-  user$: Observable<Player>;
+  private readonly authService = inject(AuthenticationService);
+  private readonly menuCtrl = inject(MenuController);
+  private readonly router = inject(Router);
 
-  constructor(
-    private authService: AuthenticationService,
-    private connectionService: ConnectionService,
-    private menuCtrl: MenuController,
-    private platform: Platform,
-    private router: Router,
-    private splashScreen: SplashScreen,
-    private statusBar: StatusBar
-  ) {
-    this.initializeApp();
+  readonly user$ = this.authService.player$;
 
-    this.user$ = this.authService.player$;
+  constructor() {
+    registerIcons();
 
-    this.connectionService.monitor().subscribe(isConnected => {
-      if (isConnected) {
-        this.router.navigateByUrl('dashboard');
-      } else {
-        this.router.navigateByUrl('no-internet');
-      }
-    });
+    inject(ConnectionService).monitor()
+      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe(isConnected => this.router.navigateByUrl(isConnected ? 'dashboard' : 'no-internet'));
   }
 
-  initializeApp() {
-    this.platform.ready().then(() => {
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
-    });
-  }
-
-  logout() {
-    this.authService.logoutUser()
-      .then(() => {
-        this.router.navigateByUrl('login');
-      })
-      .catch(error => {
-        console.log(error);
-      });
+  async logout() {
+    try {
+      await this.authService.logoutUser();
+      await this.menuCtrl.close();
+      await this.router.navigateByUrl('login');
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   editNickname() {

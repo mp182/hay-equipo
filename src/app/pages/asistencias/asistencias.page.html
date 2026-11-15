@@ -1,4 +1,4 @@
-<ion-content *ngIf="players">
+<ion-content>
     <ion-grid fixed>
         <ion-card>
             <ion-card-header>
@@ -6,7 +6,7 @@
             </ion-card-header>
             <ion-item>
                 <ion-avatar slot="start">
-                    <img src="../../../assets/img/playerAvatar.png">
+                    <img src="assets/img/playerAvatar.png" alt="Avatar">
                 </ion-avatar>
                 <h5> Nombre </h5>
                 <h4 slot="end">
@@ -19,20 +19,17 @@
         </ion-card>
 
         <ion-list>
-            <ion-item *ngFor="let player of orderByPlayed(players)">
-                <ion-avatar slot="start" *ngIf="player.image; else imagenGenerica">
-                    <img [src]="player.image" appSafeImage>
+            @for (player of players(); track player.id) {
+            <ion-item>
+                <ion-avatar slot="start">
+                    <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="Avatar">
                 </ion-avatar>
-                <ng-template #imagenGenerica>
-                    <ion-avatar slot="start">
-                        <img src="../../../assets/img/playerAvatar.png">
-                    </ion-avatar>
-                </ng-template>
                 <h6>{{player.nickname}}</h6>
                 <h4 slot="end">
                     <ion-badge color="primary" class="ion-margin-end">{{ player.played }}</ion-badge>
                 </h4>
             </ion-item>
+            }
         </ion-list>
     </ion-grid>
 </ion-content>

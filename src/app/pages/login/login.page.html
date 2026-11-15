@@ -5,44 +5,43 @@
 
             <ion-row class="ion-justify-content-center">
                 <ion-col size-md="8">
-                    <ion-img src="../../../assets/img/appicon.png" class="login-logo"></ion-img>
+                    <img src="assets/img/appicon.png" class="login-logo" alt="Hay Equipo!">
                 </ion-col>
             </ion-row>
 
-            <form class="ion-margin-vertical" [formGroup]="loginForm" (ngSubmit)="loginUser(loginForm.value)">
+            <form class="ion-margin-vertical" [formGroup]="loginForm" (ngSubmit)="loginUser()">
 
                 <ion-item>
-                    <ion-label position="floating" color="primary">Email</ion-label>
-                    <ion-input type="email" formControlName="email" required></ion-input>
+                    <ion-input label="Email" labelPlacement="floating" color="primary" type="email"
+                        autocomplete="email" formControlName="email"></ion-input>
                 </ion-item>
 
                 <ion-item>
-                    <ion-label position="floating" color="primary">Contraseña</ion-label>
-                    <ion-input type="password" formControlName="password" required></ion-input>
+                    <ion-input label="Contraseña" labelPlacement="floating" color="primary" type="password"
+                        autocomplete="current-password" formControlName="password"></ion-input>
                 </ion-item>
 
-                <ion-button class="ion-margin-vertical" type="submit" [disabled]="!loginForm.valid" expand="block">
+                <ion-button class="ion-margin-vertical" type="submit" [disabled]="loginForm.invalid" expand="block">
                     Ingresar
                 </ion-button>
 
                 <ion-button type="button" (click)="loginWithGoogle()" expand="block"
                     class="login-google-button ion-margin-vertical">
-                    <ion-img src="../../../assets/img/g-logo.png" class="g-logo"></ion-img>
+                    <img src="assets/img/g-logo.png" class="g-logo" alt="">
                     Ingresar con Google
                 </ion-button>
 
-                <label class="error-message">{{ errorMessage }}</label>
+                <p class="error-message">{{ errorMessage() }}</p>
             </form>
 
             <br>
 
             <p>
-                No tenés cuenta? <span class="link" [routerLink]="['/register']">Crear una cuenta.</span>
+                No tenés cuenta? <a class="link" routerLink="/register">Crear una cuenta.</a>
             </p>
 
             <p>
-                Olvidaste tu contraseña? <span class="link" [routerLink]="['/reset-password']">Recuperar
-                    contraseña.</span>
+                Olvidaste tu contraseña? <a class="link" routerLink="/reset-password">Recuperar contraseña.</a>
             </p>
 
         </ion-grid>

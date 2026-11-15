@@ -14,15 +14,17 @@
 
         <ion-card-content>
             <ion-list>
-                <ion-item class="ion-margin-vertical ion-text-justify" *ngFor="let item of (news$ | async)">
-                    <ion-icon name="football" slot="start"></ion-icon>
-                    <p>{{ item.description }}</p>
-                </ion-item>
+                @for (item of news$ | async; track item.id) {
+                    <ion-item class="ion-margin-vertical ion-text-justify">
+                        <ion-icon name="football" slot="start"></ion-icon>
+                        <p>{{ item.description }}</p>
+                    </ion-item>
+                }
             </ion-list>
         </ion-card-content>
     </ion-card>
 
-    <ion-button class="ion-padding" type="submit" expand="block" (click)="updateApp()">
+    <ion-button class="ion-padding" expand="block" (click)="updateApp()">
         Actualizar
     </ion-button>
 

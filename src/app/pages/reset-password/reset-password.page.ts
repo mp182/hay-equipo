@@ -1,54 +1,45 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import {
+  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+} from '@ionic/angular';
+
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { Router } from '@angular/router';
+import { EMAIL_PATTERN } from '../../helpers/string.helpers';
 
 @Component({
   selector: 'app-reset-password',
   templateUrl: './reset-password.page.html',
   styleUrls: ['./reset-password.page.scss'],
+  imports: [
+    ReactiveFormsModule,
+    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+  ],
 })
-export class ResetPasswordPage implements OnInit {
+export class ResetPasswordPage {
 
-  reserPasswordForm: FormGroup;
+  private readonly authService = inject(AuthenticationService);
+  private readonly loadingService = inject(LoadingService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  constructor(
-    private authService: AuthenticationService,
-    private formBuilder: FormBuilder,
-    private loadingService: LoadingService,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
+  readonly resetPasswordForm = inject(FormBuilder).nonNullable.group({
+    email: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
+  });
 
-  ngOnInit() {
-    this.reserPasswordForm = this.formBuilder.group({
-      email: new FormControl('', Validators.compose([
-        Validators.required,
-        Validators.pattern('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$')
-      ]))
-    });
-  }
-
-  ionViewWillEnter() {
-    this.loadingService.showLoading();
-  }
-
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
-  }
-
-  resetPassword(value: { email: string; }) {
-    this.loadingService.showLoading();
-    this.authService.resetPassword(value)
-      .then(() => {
-        this.loadingService.hideLoading();
-        this.toastService.successToast('Revisa tu email para continuar!');
-        this.router.navigateByUrl('login');
-      }, () => {
-        this.loadingService.hideLoading();
-        this.toastService.errorToast();
-      });
+  async resetPassword() {
+    await this.loadingService.showLoading();
+    try {
+      await this.authService.resetPassword(this.resetPasswordForm.getRawValue());
+      await this.toastService.successToast('Revisa tu email para continuar!');
+      await this.router.navigateByUrl('login');
+    } catch {
+      await this.toastService.errorToast();
+    } finally {
+      await this.loadingService.hideLoading();
+    }
   }
 }

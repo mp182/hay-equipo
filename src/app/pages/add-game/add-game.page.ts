@@ -1,64 +1,57 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
-import { DbService } from 'src/app/services/db.service';
-import { nextSaturday } from '../../helpers/date.helpers';
-import { ToastService } from 'src/app/services/toast.service';
-import { LoadingService } from 'src/app/services/loading.service';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import {
+  IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput, IonItem,
+  IonLabel, IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar
+} from '@ionic/angular';
+
+import { DbService } from 'src/app/services/db.service';
+import { LoadingService } from 'src/app/services/loading.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { nextSaturday, toLocalIsoString } from '../../helpers/date.helpers';
 
 @Component({
   selector: 'app-add-game',
   templateUrl: './add-game.page.html',
   styleUrls: ['./add-game.page.scss'],
+  imports: [
+    ReactiveFormsModule,
+    IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput, IonItem,
+    IonLabel, IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar
+  ],
 })
-export class AddGamePage implements OnInit {
+export class AddGamePage {
 
-  matchForm: FormGroup;
-  nextSaturday: Date = nextSaturday();
-  maxPlayerPopoverOptions: any = {
-    header: 'Elegí uno 👇'
-  };
+  private readonly dbService = inject(DbService);
+  private readonly loadingService = inject(LoadingService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  constructor(
-    private dbService: DbService,
-    private formBuilder: FormBuilder,
-    private loadingService: LoadingService,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
+  readonly maxPlayerOptions = { header: 'Elegí uno 👇' };
 
-  ngOnInit() {
-    this.matchForm = this.formBuilder.group({
-      date: new FormControl(this.nextSaturday.toISOString(), Validators.compose([Validators.required])),
-      time: new FormControl('19:00', Validators.compose([Validators.required])),
-      maxPlayers: new FormControl('12', Validators.compose([Validators.required])),
-      location: new FormControl('La Filial', Validators.compose([Validators.required]))
-    });
-  }
+  readonly matchForm = inject(FormBuilder).nonNullable.group({
+    // Por defecto: el próximo sábado a las 19 hs.
+    date: [toLocalIsoString(nextSaturday(19, 0)), Validators.required],
+    maxPlayers: [12, Validators.required],
+    location: ['La Filial', Validators.required]
+  });
 
-  ionViewWillEnter() {
-    this.loadingService.showLoading();
-  }
+  async addMatch() {
+    const { date, maxPlayers, location } = this.matchForm.getRawValue();
+    const matchDate = new Date(date);
+    matchDate.setSeconds(0, 0);
 
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
-  }
-
-  addMatch(value: { time: string; date: string; maxPlayers: number; location: string }) {
-    const hour: number = +value.time.split(':')[0];
-    const minutes: number = +value.time.split(':')[1];
-    const matchDate = new Date(value.date);
-    matchDate.setHours(hour);
-    matchDate.setMinutes(minutes);
-    matchDate.setSeconds(0);
-    matchDate.setMilliseconds(0);
-    this.dbService.addMatch(matchDate, value.maxPlayers, value.location)
-      .then(() => {
-        this.router.navigateByUrl('dashboard');
-        this.toastService.successToast('Partido creado! ⚽');
-      }, () => {
-        this.toastService.errorToast();
-      });
+    await this.loadingService.showLoading();
+    try {
+      await this.dbService.addMatch(matchDate, +maxPlayers, location.trim());
+      await this.router.navigateByUrl('dashboard');
+      await this.toastService.successToast('Partido creado! ⚽');
+    } catch {
+      await this.toastService.errorToast();
+    } finally {
+      await this.loadingService.hideLoading();
+    }
   }
 
 }

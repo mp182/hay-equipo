@@ -1,36 +1,31 @@
-import { Component } from '@angular/core';
-import { Observable } from 'rxjs';
+import { AsyncPipe } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import {
+  IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
+  IonItem, IonList, IonTitle, IonToolbar, ModalController
+} from '@ionic/angular';
+
 import { DbService } from 'src/app/services/db.service';
-import { LoadingService } from 'src/app/services/loading.service';
-import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-update',
   templateUrl: './update.page.html',
   styleUrls: ['./update.page.scss'],
+  imports: [
+    AsyncPipe,
+    IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
+    IonItem, IonList, IonTitle, IonToolbar
+  ],
 })
 export class UpdatePage {
 
-  news$: Observable<any>;
+  private readonly modalController = inject(ModalController);
 
-  constructor(
-    private dbService: DbService,
-    private loadingService: LoadingService,
-    private navCtrl: NavController
-  ) { }
+  readonly news$ = inject(DbService).getNews();
 
-  ionViewWillEnter() {
-    this.loadingService.showLoading();
-    this.news$ = this.dbService.getNews();
-  }
-
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
-  }
-
-  updateApp() {
-    this.navCtrl.navigateRoot('dashboard');
-    window.location.reload();
+  async updateApp() {
+    await this.modalController.dismiss().catch(() => undefined);
+    window.location.href = '/dashboard';
   }
 
 }

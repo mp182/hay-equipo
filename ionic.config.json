@@ -1,8 +1,7 @@
 {
   "name": "HayEquipoApp",
   "integrations": {
-    "cordova": {},
     "capacitor": {}
   },
-  "type": "angular"
+  "type": "angular-standalone"
 }

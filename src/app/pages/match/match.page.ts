@@ -1,8 +1,18 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
-import { combineLatest, Observable, Subscription } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { DatePipe } from '@angular/common';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import {
+  AlertButton, AlertController, IonAvatar, IonBackButton, IonBadge, IonButton, IonButtons, IonCard, IonCardContent,
+  IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem,
+  IonLabel, IonList, IonMenuButton, IonRow, IonTitle, IonToolbar
+} from '@ionic/angular';
+import { combineLatest, map } from 'rxjs';
+
+import { ScoreComponent } from 'src/app/components/score/score.component';
+import { ScoreNumberComponent } from 'src/app/components/score-number/score-number.component';
+import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
+import { sortByScore } from 'src/app/helpers/score.helpers';
 import { Match } from 'src/app/models/match.interface';
 import { Player } from 'src/app/models/player.interface';
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -14,382 +24,201 @@ import { ToastService } from 'src/app/services/toast.service';
   selector: 'app-match',
   templateUrl: './match.page.html',
   styleUrls: ['./match.page.scss'],
+  imports: [
+    DatePipe, RouterLink, SafeImageDirective, ScoreComponent, ScoreNumberComponent,
+    IonAvatar, IonBackButton, IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle,
+    IonCardTitle, IonChip, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList,
+    IonMenuButton, IonRow, IonTitle, IonToolbar
+  ],
 })
-export class MatchPage implements OnInit, OnDestroy {
+export class MatchPage implements OnInit {
 
-  alertPresent = false;
-  fullMatch = false;
-  matchId: string;
-  match: Match;
-  match$: Observable<Match>;
-  matchOver = false;
-  player: Player;
-  player$: Observable<Player>;
-  players: Player[];
-  players$: Observable<Player[]>;
-  subscribed = false;
-  subscription: Subscription;
-  teamWhite: Player[];
-  teamWhiteSubscription: Subscription;
-  teamBlack: Player[];
-  teamBlackSubscription: Subscription;
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly alertController = inject(AlertController);
+  private readonly authService = inject(AuthenticationService);
+  private readonly db = inject(DbService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly loadingService = inject(LoadingService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private alertController: AlertController,
-    private authService: AuthenticationService,
-    private db: DbService,
-    private loadingService: LoadingService,
-    private router: Router,
-    private toastService: ToastService
-  ) { }
+  readonly matchId = this.activatedRoute.snapshot.paramMap.get('id')!;
+
+  readonly player = signal<Player | null>(null);
+  readonly match = signal<Match | null>(null);
+  readonly players = signal<Player[]>([]);
+  readonly teamWhite = signal<Player[]>([]);
+  readonly teamBlack = signal<Player[]>([]);
+
+  readonly fullMatch = signal(false);
+  readonly matchOver = signal(false);
+  readonly subscribed = signal(false);
+
+  private alert?: HTMLIonAlertElement;
 
   ngOnInit() {
-    this.loadingService.showLoading();
+    this.db.getTeamBlack(this.matchId)
+      .pipe(map(sortByScore), takeUntilDestroyed(this.destroyRef))
+      .subscribe(team => this.teamBlack.set(team));
 
-    this.matchId = this.activatedRoute.snapshot.paramMap.get('id');
-    this.match$ = this.db.getMatch(this.matchId);
-    this.player$ = this.authService.player$;
-    this.players$ = this.db.getSubscribers(this.matchId).pipe(
-      tap(players => {
-        players.sort((a, b) => {
-          const scoreA = a.played < 10 ? 50
-            : a.played >= 10 && a.won === 0 ? 0
-              : (a.won / a.played) * 100;
-          const scoreB = b.played < 10 ? 50
-            : b.played >= 10 && b.won === 0 ? 0
-              : (b.won / b.played) * 100;
-          return scoreB - scoreA;
-        });
-      })
-    );
+    this.db.getTeamWhite(this.matchId)
+      .pipe(map(sortByScore), takeUntilDestroyed(this.destroyRef))
+      .subscribe(team => this.teamWhite.set(team));
 
-    this.teamBlackSubscription = this.db.getTeamBlack(this.matchId).subscribe(team => {
-      this.teamBlack = team;
-      this.teamBlack.sort((a, b) => {
-        const scoreA = a.played < 10 ? 50
-          : a.played >= 10 && a.won === 0 ? 0
-            : (a.won / a.played) * 100;
-        const scoreB = b.played < 10 ? 50
-          : b.played >= 10 && b.won === 0 ? 0
-            : (b.won / b.played) * 100;
-        return scoreB - scoreA;
+    combineLatest([
+      this.authService.player$,
+      this.db.getSubscribers(this.matchId).pipe(map(sortByScore)),
+      this.db.getMatch(this.matchId)
+    ]).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([player, players, match]) => {
+        this.player.set(player);
+        this.players.set(players);
+        this.match.set(match ?? null);
+
+        if (match) {
+          // El partido se considera terminado una hora después de empezar.
+          const matchEnd = match.date.toDate().getTime() + 60 * 60 * 1000;
+          this.matchOver.set(Date.now() > matchEnd);
+          this.fullMatch.set((match.playersList?.length ?? 0) === +match.maxPlayers);
+          this.subscribed.set(!!player && (match.playersList ?? []).includes(player.id));
+        }
       });
-    });
-
-    this.teamWhiteSubscription = this.db.getTeamWhite(this.matchId).subscribe(team => {
-      this.teamWhite = team;
-      this.teamWhite.sort((a, b) => {
-        const scoreA = a.played < 10 ? 50
-          : a.played >= 10 && a.won === 0 ? 0
-            : (a.won / a.played) * 100;
-        const scoreB = b.played < 10 ? 50
-          : b.played >= 10 && b.won === 0 ? 0
-            : (b.won / b.played) * 100;
-        return scoreB - scoreA;
-      });
-    });
-
-    this.subscription = combineLatest([this.player$, this.players$, this.match$]).pipe(
-      map(result => {
-        this.player = result[0];
-        this.players = result[1];
-        this.match = result[2];
-
-        this.matchOver = new Date() > this.match.date.toDate().setHours(this.match.date.toDate().getHours() + 1);
-        this.fullMatch = this.match.playersList?.length === +this.match.maxPlayers;
-        this.subscribed = this.match.playersList?.some(x => x === this.player?.id);
-      })
-    ).subscribe();
-
-  }
-
-  ionViewDidEnter() {
-    this.loadingService.hideLoading();
   }
 
   ionViewWillLeave() {
-    if (this.alertPresent) { this.alertController.dismiss(); }
+    this.alert?.dismiss();
   }
 
-  ngOnDestroy() {
-    if (this.subscription) { this.subscription.unsubscribe(); }
+  isAdmin(role: 'admin' | 'superadmin' = 'admin') {
+    return !!this.player()?.roles?.includes(role);
+  }
+
+  /** Puede borrar a un amigo quien lo anotó o un admin. */
+  canDeleteFriend(subscriber: Player) {
+    return !!subscriber.friendOf && (subscriber.friendOf === this.player()?.id || this.isAdmin());
   }
 
   addFriend() {
     this.router.navigate(['add-friend', this.matchId]);
   }
 
-  async unsubscribeAlert() {
-    const alert = await this.alertController.create({
-      backdropDismiss: false,
-      header: 'No vas a jugar?',
-      message: 'Te bajas del partido?',
-      mode: 'ios',
-      buttons: [
-        {
-          text: 'Me quedo 💪',
-          role: 'cancel',
-          handler: () => {
-            this.alertPresent = false;
-          }
-        }, {
-          text: 'Me bajo 😔',
-          handler: () => {
-            this.loadingService.showLoading();
-            Promise.all(this.unsubscribe(this.player.id, this.matchId))
-              .then(() => {
-                this.alertPresent = false;
-                this.loadingService.hideLoading();
-                this.router.navigateByUrl('dashboard');
-              })
-              .catch(async () => {
-                this.alertPresent = false;
-                this.toastService.errorToast();
-                this.loadingService.hideLoading();
-              });
-          }
-        }
-      ]
-    });
-
-    await alert.present().then(() => this.alertPresent = true);
+  async joinMatch() {
+    const player = this.player();
+    if (!player) {
+      return;
+    }
+    await this.withLoading(() => this.db.joinMatch(player, this.matchId), 'Anotado! 🤜🤛');
   }
 
-  unsubscribe(playerId: string, matchId: string) {
-    return this.db.unsubscribe(playerId, matchId);
+  unsubscribeAlert() {
+    return this.confirm('No vas a jugar?', 'Te bajas del partido?', 'Me quedo 💪', 'Me bajo 😔', async () => {
+      if (await this.withLoading(() => this.db.unsubscribe(this.player()!.id, this.matchId))) {
+        await this.router.navigateByUrl('dashboard');
+      }
+    }, 'ios');
   }
 
-  teams() {
-    this.players = this.players.sort((a, b) => {
-      const scoreA = a.played < 10 || a.won === 0 ? 50 : (a.won / a.played) * 100;
-      const scoreB = b.played < 10 || b.won === 0 ? 50 : (b.won / b.played) * 100;
-      return scoreB - scoreA;
-    });
+  deleteFriend(subscriber: Player) {
+    return this.confirm('Eliminar amigo?', `Borrar a ${subscriber.nickname}?`, 'No, le erré!', 'Si, ya fue!',
+      () => this.withLoading(() => this.db.unsubscribe(subscriber.id, this.matchId), 'Amigo eliminado!'));
+  }
 
-    if (this.players.length === 12) {
-      this.teamWhite.push(this.players[0]);
-      this.teamWhite.push(this.players[11]);
-      this.teamWhite.push(this.players[2]);
-      this.teamWhite.push(this.players[9]);
-      this.teamWhite.push(this.players[4]);
-      this.teamWhite.push(this.players[7]);
+  /** Arma los equipos de forma pareja intercalando a los jugadores según su promedio. */
+  async teams() {
+    const score = (p: Player) => p.played < 10 || p.won === 0 ? 50 : (p.won / p.played) * 100;
+    const players = [...this.players()].sort((a, b) => score(b) - score(a));
 
-      this.teamBlack.push(this.players[1]);
-      this.teamBlack.push(this.players[10]);
-      this.teamBlack.push(this.players[3]);
-      this.teamBlack.push(this.players[8]);
-      this.teamBlack.push(this.players[5]);
-      this.teamBlack.push(this.players[6]);
+    const picks: Record<number, { white: number[]; black: number[] }> = {
+      12: { white: [0, 11, 2, 9, 4, 7], black: [1, 10, 3, 8, 5, 6] },
+      10: { white: [0, 9, 2, 7, 4], black: [1, 8, 3, 6, 5] },
+    };
+    const pick = picks[players.length];
+    if (!pick) {
+      await this.toastService.infoToast('Se necesitan 10 o 12 jugadores para armar los equipos.');
+      return;
     }
 
-    if (this.players.length === 10) {
-      this.teamWhite.push(this.players[0]);
-      this.teamWhite.push(this.players[9]);
-      this.teamWhite.push(this.players[2]);
-      this.teamWhite.push(this.players[7]);
-      this.teamWhite.push(this.players[4]);
-
-      this.teamBlack.push(this.players[1]);
-      this.teamBlack.push(this.players[8]);
-      this.teamBlack.push(this.players[3]);
-      this.teamBlack.push(this.players[6]);
-      this.teamBlack.push(this.players[5]);
-    }
-
-    this.db.setTeams(this.matchId, this.teamWhite, this.teamBlack);
+    await this.withLoading(() => this.db.setTeams(
+      this.matchId,
+      pick.white.map(i => players[i]),
+      pick.black.map(i => players[i])
+    ));
   }
 
   async theWinnerIs() {
-    let alert: HTMLIonAlertElement;
-    alert = await this.alertController.create({
-      backdropDismiss: false,
+    await this.showAlert({
       header: 'El ganador es...',
       message: '¿Quién ganó?',
-      buttons: [
-        this.teamBlackButton,
-        this.teamWhiteButton
-      ]
+      buttons: [this.winnerButton('black'), this.winnerButton('white')]
     });
-
-    await alert.present().then(() => this.alertPresent = true);
-  }
-
-  async joinMatch(player: Player, matchId: string) {
-    this.loadingService.showLoading();
-    Promise.all(await this.db.joinMatch(player, matchId))
-      .then(() => {
-        this.loadingService.hideLoading();
-        this.toastService.successToast('Anotado! 🤜🤛');
-      })
-      .catch(() => {
-        this.loadingService.hideLoading();
-        this.toastService.errorToast();
-      });
-  }
-
-  async deleteFriend(orderedPlayer: any) {
-    const alert = await this.alertController.create({
-      backdropDismiss: false,
-      header: 'Eliminar amigo?',
-      message: `Borrar a ${orderedPlayer.nickname}?`,
-      buttons: [
-        {
-          text: 'No, le erré!',
-          role: 'cancel',
-          cssClass: 'secondary',
-          handler: () => {
-            this.alertPresent = false;
-          }
-        }, {
-          text: 'Si, ya fue!',
-          handler: () => {
-            this.loadingService.showLoading();
-            Promise.all(this.unsubscribe(orderedPlayer.id, this.matchId))
-              .then(() => {
-                this.alertPresent = false;
-                this.loadingService.hideLoading();
-                this.toastService.successToast('Amigo eliminado!');
-              })
-              .catch(async () => {
-                this.alertPresent = false;
-                this.toastService.errorToast();
-                this.loadingService.hideLoading();
-              });
-          }
-        }
-      ]
-    });
-
-    await alert.present().then(() => this.alertPresent = true);
   }
 
   async suspendedMatch() {
-    let alert: HTMLIonAlertElement;
-    alert = await this.alertController.create({
-      backdropDismiss: false,
+    await this.showAlert({
       header: 'Se suspendió?',
       message: 'Este partido no cuenta...',
-      buttons: [
-        this.matchSuspendedButton
-      ]
+      buttons: [{
+        text: 'Suspendido 😥',
+        handler: () => {
+          this.confirm('Partido Suspendido!', '¿Seguro...?', 'No, le erré 👎', 'Si 😀', async () => {
+            if (await this.withLoading(() => this.db.updateMatch(this.matchId))) {
+              await this.router.navigateByUrl('dashboard');
+            }
+          });
+        }
+      }]
     });
-
-    await alert.present().then(() => this.alertPresent = true);
   }
 
-  private readonly matchSuspendedButton = {
-    text: 'Suspendido 😥',
-    handler: async () => {
-      const alertMatchSuspended = await this.alertController.create({
-        backdropDismiss: false,
-        header: 'Partido Suspendido!',
-        message: '¿Seguro...?',
-        buttons: [
-          {
-            text: 'No, le erré 👎',
-            role: 'cancel',
-            cssClass: 'secondary',
-            handler: () => {
-              this.alertPresent = false;
-            }
-          }, {
-            text: 'Si 😀',
-            handler: () => {
-              this.loadingService.showLoading();
-              this.db.updateMatch(this.matchId)
-                .then(() => {
-                  this.alertPresent = false;
-                  this.loadingService.hideLoading();
-                  this.router.navigateByUrl('dashboard');
-                })
-                .catch(() => {
-                  this.alertPresent = false;
-                  this.toastService.errorToast();
-                  this.loadingService.hideLoading();
-                });
-            }
+  private winnerButton(team: 'white' | 'black'): AlertButton {
+    const name = team === 'white' ? 'Remera Blanca' : 'Remera Negra';
+    return {
+      text: team === 'white' ? `${name} 🏳️` : `${name} 🏴`,
+      handler: () => {
+        this.confirm(`${name}!`, '¿Seguro...?', 'No, le erré 👎', 'Si 😀', async () => {
+          if (await this.withLoading(() => this.db.setWinner(this.matchId, team, this.teamWhite(), this.teamBlack()))) {
+            await this.router.navigateByUrl('dashboard');
           }
-        ]
-      });
-      alertMatchSuspended.present().then(() => this.alertPresent = true);
-    }
-  };
+        });
+      }
+    };
+  }
 
-  private readonly teamWhiteButton = {
-    text: 'Remera Blanca 🏳️',
-    handler: async () => {
-      const alertWhite = await this.alertController.create({
-        backdropDismiss: false,
-        header: 'Remera Blanca!',
-        message: '¿Seguro...?',
-        buttons: [
-          {
-            text: 'No, le erré 👎',
-            role: 'cancel',
-            cssClass: 'secondary',
-            handler: () => {
-              this.alertPresent = false;
-            }
-          }, {
-            text: 'Si 😀',
-            handler: () => {
-              this.loadingService.showLoading();
-              this.db.setWinner(this.matchId, 'white', this.teamWhite, this.teamBlack)
-                .then(() => {
-                  this.alertPresent = false;
-                  this.loadingService.hideLoading();
-                  this.router.navigateByUrl('dashboard');
-                })
-                .catch(() => {
-                  this.alertPresent = false;
-                  this.toastService.errorToast();
-                  this.loadingService.hideLoading();
-                });
-            }
-          }
-        ]
-      });
-      alertWhite.present().then(() => this.alertPresent = true);
-    }
-  };
+  private confirm(
+    header: string, message: string, cancelText: string, okText: string, onOk: () => Promise<unknown>, mode?: 'ios'
+  ) {
+    return this.showAlert({
+      header,
+      message,
+      mode,
+      buttons: [
+        { text: cancelText, role: 'cancel', cssClass: 'secondary' },
+        { text: okText, handler: () => { onOk(); } }
+      ]
+    });
+  }
 
-  private readonly teamBlackButton = {
-    text: 'Remera Negra 🏴',
-    handler: async () => {
-      const alertBlack = await this.alertController.create({
-        backdropDismiss: false,
-        header: 'Remera Negra!',
-        message: '¿Seguro...?',
-        buttons: [
-          {
-            text: 'No, le erré 👎',
-            role: 'cancel',
-            cssClass: 'secondary',
-            handler: () => {
-              this.alertPresent = false;
-            }
-          }, {
-            text: 'Si 😀',
-            handler: () => {
-              this.loadingService.showLoading();
-              this.db.setWinner(this.matchId, 'black', this.teamWhite, this.teamBlack)
-                .then(() => {
-                  this.alertPresent = false;
-                  this.loadingService.hideLoading();
-                  this.router.navigateByUrl('dashboard');
-                })
-                .catch(() => {
-                  this.alertPresent = false;
-                  this.toastService.errorToast();
-                  this.loadingService.hideLoading();
-                });
-            }
-          }
-        ]
-      });
-      alertBlack.present().then(() => this.alertPresent = true);
+  private async showAlert(options: Parameters<AlertController['create']>[0]) {
+    this.alert = await this.alertController.create({ backdropDismiss: false, ...options });
+    await this.alert.present();
+  }
+
+  /** Ejecuta la acción mostrando el loader y un toast de error si falla. Devuelve si salió bien. */
+  private async withLoading(action: () => Promise<unknown>, successMessage?: string): Promise<boolean> {
+    await this.loadingService.showLoading();
+    try {
+      await action();
+      if (successMessage) {
+        await this.toastService.successToast(successMessage);
+      }
+      return true;
+    } catch (err) {
+      console.error(err);
+      await this.toastService.errorToast();
+      return false;
+    } finally {
+      await this.loadingService.hideLoading();
     }
-  };
+  }
 
 }

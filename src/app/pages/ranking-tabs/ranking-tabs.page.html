@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>Ranking</ion-title>
     <ion-buttons slot="secondary">
-      <ion-menu-button autoHide="false"></ion-menu-button>
+      <ion-menu-button [autoHide]="false"></ion-menu-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -31,7 +31,8 @@
       </ion-tab-bar>
     </ion-tabs>
 
-    <ion-card class="margin-top-72px" *ngIf="!rankingTabsService.tabsNavigation">
+    @if (!rankingTabsService.tabsNavigation()) {
+    <ion-card class="margin-top-72px">
       <ion-card-header>
         <ion-card-subtitle>Ranking</ion-card-subtitle>
         <ion-card-title>Categorías</ion-card-title>
@@ -51,5 +52,6 @@
         <ion-text>Partidos Ganados</ion-text>
       </ion-item>
     </ion-card>
+    }
   </ion-grid>
 </ion-content>
