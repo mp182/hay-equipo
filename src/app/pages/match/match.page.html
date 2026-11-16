@@ -103,9 +103,10 @@
                                         alt="Avatar">
                                 </ion-avatar>
                                 <h6>{{ subscriber.nickname }}</h6>
-                                @if (canDeleteFriend(subscriber)) {
+                                @if (canRemove(subscriber)) {
                                     <ion-button shape="round" color="danger" class="ion-margin-start"
-                                        (click)="deleteFriend(subscriber)">
+                                        [attr.aria-label]="'Bajar a ' + subscriber.nickname"
+                                        (click)="removeSubscriber(subscriber)">
                                         <ion-icon slot="icon-only" name="close"></ion-icon>
                                     </ion-button>
                                 }

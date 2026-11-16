@@ -89,13 +89,25 @@ export class MatchPage implements OnInit {
     this.alert?.dismiss();
   }
 
-  isAdmin(role: 'admin' | 'superadmin' = 'admin') {
-    return !!this.player()?.roles?.includes(role);
+  /**
+   * Sin argumento: `true` para admins y superadmins (igual que `isAdmin()` en las reglas de Firestore).
+   * Con un rol: solo ese rol (por ejemplo, lo que es exclusivo del superadmin).
+   */
+  isAdmin(role?: 'admin' | 'superadmin') {
+    const roles = this.player()?.roles ?? [];
+    return role ? roles.includes(role) : roles.includes('admin') || roles.includes('superadmin');
   }
 
-  /** Puede borrar a un amigo quien lo anotó o un admin. */
-  canDeleteFriend(subscriber: Player) {
-    return !!subscriber.friendOf && (subscriber.friendOf === this.player()?.id || this.isAdmin());
+  /**
+   * Quién ve la ✕ para bajar a un anotado: los admins pueden bajar a cualquiera;
+   * los demás, solo a los amigos que anotaron. Uno mismo se baja con "Me bajo".
+   */
+  canRemove(subscriber: Player) {
+    const me = this.player()?.id;
+    if (subscriber.id === me) {
+      return false;
+    }
+    return this.isAdmin() || (!!subscriber.friendOf && subscriber.friendOf === me);
   }
 
   addFriend() {
@@ -118,9 +130,13 @@ export class MatchPage implements OnInit {
     }, 'ios');
   }
 
-  deleteFriend(subscriber: Player) {
-    return this.confirm('Eliminar amigo?', `Borrar a ${subscriber.nickname}?`, 'No, le erré!', 'Si, ya fue!',
-      () => this.withLoading(() => this.db.unsubscribe(subscriber.id, this.matchId), 'Amigo eliminado!'));
+  removeSubscriber(subscriber: Player) {
+    const isMyFriend = !!subscriber.friendOf && subscriber.friendOf === this.player()?.id;
+    const [header, done] = isMyFriend
+      ? ['Eliminar amigo?', 'Amigo eliminado!']
+      : ['Bajar del partido?', `${subscriber.nickname} ya no está anotado.`];
+    return this.confirm(header, `Bajar a ${subscriber.nickname}?`, 'No, le erré!', 'Si, ya fue!',
+      () => this.withLoading(() => this.db.unsubscribe(subscriber.id, this.matchId), done));
   }
 
   /** Arma los equipos de forma pareja intercalando a los jugadores según su promedio. */
