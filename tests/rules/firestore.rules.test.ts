@@ -4,7 +4,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   Firestore, Timestamp, arrayRemove, arrayUnion, deleteDoc, doc, getDoc, increment, runTransaction,
-  setDoc, updateDoc, writeBatch
+  serverTimestamp, setDoc, updateDoc, writeBatch
 } from 'firebase/firestore';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 
@@ -231,5 +231,37 @@ describe('partidos, equipos y resultado', () => {
 
   it('un jugador no puede cerrar el partido', async () => {
     await assertFails(updateDoc(doc(db(BETO), MATCH), { enabled: false }));
+  });
+});
+
+describe('nueva temporada', () => {
+  /** Lo mismo que hace `DbService.startNewSeason`: anota la fecha y divide los partidos en el mismo batch. */
+  function startSeason(firestore: Firestore, uid: string) {
+    const batch = writeBatch(firestore);
+    batch.set(doc(firestore, 'config/season'), { startedAt: serverTimestamp(), startedBy: uid });
+    batch.update(doc(firestore, `users/${ANA}`), { played: 10, won: 6 });
+    return batch.commit();
+  }
+
+  it('un admin arranca la temporada', async () => {
+    await assertSucceeds(startSeason(db(ADMIN), ADMIN));
+  });
+
+  it('no se puede arrancar dos veces el mismo día, y entonces no se divide nada', async () => {
+    await assertSucceeds(startSeason(db(ADMIN), ADMIN));
+    await assertFails(startSeason(db(SUPERADMIN), SUPERADMIN));
+  });
+
+  it('se puede arrancar otra si la anterior empezó hace más de un día', async () => {
+    await seed(firestore => setDoc(doc(firestore, 'config/season'), {
+      startedAt: Timestamp.fromMillis(Date.now() - 2 * 24 * 60 * 60 * 1000), startedBy: ADMIN
+    }));
+    await assertSucceeds(startSeason(db(ADMIN), ADMIN));
+  });
+
+  it('un jugador no la arranca, ni se puede inventar la fecha ni quién la arrancó', async () => {
+    await assertFails(setDoc(doc(db(ANA), 'config/season'), { startedAt: serverTimestamp(), startedBy: ANA }));
+    await assertFails(setDoc(doc(db(ADMIN), 'config/season'), { startedAt: Timestamp.now(), startedBy: ADMIN }));
+    await assertFails(setDoc(doc(db(ADMIN), 'config/season'), { startedAt: serverTimestamp(), startedBy: ANA }));
   });
 });

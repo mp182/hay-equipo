@@ -17,13 +17,26 @@
       <p>
         Estás por empezar una nueva temporada, esto va a eliminar la mitad de partidos de todos los jugadores.
       </p>
-      <p>
-        Si estás seguro apretá el botón de abajo para confirmar.
-      </p>
+      @if (seasonStart(); as start) {
+        <p>
+          La temporada actual empezó el {{ start | date: 'dd/MM/yyyy HH:mm' }}.
+        </p>
+      }
+      @if (startedToday()) {
+        <p>
+          <strong>Ya se arrancó una temporada hoy.</strong> Para no dividir los partidos dos veces,
+          la próxima se puede arrancar mañana.
+        </p>
+      } @else {
+        <p>
+          Si estás seguro apretá el botón de abajo para confirmar.
+        </p>
+      }
     </ion-card-content>
   </ion-card>
 
-  <ion-button color="danger" expand="block" class="ion-margin" (click)="newSeason()">
+  <ion-button color="danger" expand="block" class="ion-margin" [disabled]="starting() || startedToday()"
+    (click)="newSeason()">
     ⚠️ Nueva Temporada ⚠️
   </ion-button>
 </ion-content>

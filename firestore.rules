@@ -165,6 +165,19 @@ service cloud.firestore {
       }
     }
 
+    // ---------- Temporada ----------
+    // Fecha en que empezó la temporada actual. Se anota en el mismo batch que divide los partidos
+    // (`DbService.startNewSeason`), y no se puede volver a anotar hasta el día siguiente:
+    // así un doble toque o dos admins a la vez no dividen los partidos dos veces.
+    match /config/season {
+      allow read: if signedIn();
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['startedAt', 'startedBy'])
+        && request.resource.data.startedAt == request.time
+        && request.resource.data.startedBy == request.auth.uid
+        && (resource == null || resource.data.startedAt < request.time - duration.value(1, 'd'));
+    }
+
     // ---------- Novedades ----------
 
     // Novedades del dashboard.

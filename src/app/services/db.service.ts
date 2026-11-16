@@ -1,7 +1,7 @@
 import { EnvironmentInjector, Injectable, inject, runInInjectionContext } from '@angular/core';
 import {
   Firestore, addDoc, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, docData, getDocsFromServer, increment,
-  query, runTransaction, updateDoc, where, writeBatch
+  query, runTransaction, serverTimestamp, updateDoc, where, writeBatch, Timestamp
 } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
 
@@ -43,6 +43,9 @@ export class MatchClosedError extends Error {
 
 /** Firestore admite hasta 500 escrituras por batch. */
 const BATCH_LIMIT = 500;
+
+/** Documento con la fecha en que empezó la temporada actual. */
+const SEASON_PATH = 'config/season';
 
 @Injectable({ providedIn: 'root' })
 export class DbService {
@@ -275,23 +278,46 @@ export class DbService {
     )) as Observable<Player[]>;
   }
 
+  /** Cuándo empezó la temporada actual (`undefined` si nunca se arrancó una desde la app). */
+  getSeasonStart(): Observable<Date | undefined> {
+    return (this.run(() => docData(doc(this.firestore, SEASON_PATH))) as Observable<{ startedAt?: Timestamp } | undefined>)
+      .pipe(map(season => season?.startedAt?.toDate()));
+  }
+
   /**
    * Nueva temporada: a cada jugador le quedan la mitad de los partidos jugados y ganados.
    * Lee los jugadores directo del servidor: la primera respuesta de un listener puede venir de la caché local
    * (con solo el jugador logueado) y la temporada se aplicaría a medias.
+   *
+   * El primer batch también anota la fecha en `config/season`, y las reglas no dejan anotarla de nuevo hasta
+   * el día siguiente: si se aprieta dos veces o la arrancan dos admins a la vez, el segundo batch se rechaza
+   * entero y no se dividen los partidos dos veces.
    */
   async startNewSeason() {
     const snapshot = await this.run(() => getDocsFromServer(collection(this.firestore, 'users')));
     const toUpdate = snapshot.docs.filter(player => (player.data()['played'] ?? 0) > 0);
-    for (let start = 0; start < toUpdate.length; start += BATCH_LIMIT) {
+    const uid = (await this.authService.userDetails())?.uid;
+
+    // El primer batch lleva una escritura menos de jugadores: la de la fecha de la temporada.
+    let start = 0;
+    let first = true;
+    while (first || start < toUpdate.length) {
+      const size = first ? BATCH_LIMIT - 1 : BATCH_LIMIT;
+      const players = toUpdate.slice(start, start + size);
+      const markSeason = first;
       await this.run(() => {
         const batch = writeBatch(this.firestore);
-        toUpdate.slice(start, start + BATCH_LIMIT).forEach(player => batch.update(player.ref, {
+        if (markSeason) {
+          batch.set(doc(this.firestore, SEASON_PATH), { startedAt: serverTimestamp(), startedBy: uid });
+        }
+        players.forEach(player => batch.update(player.ref, {
           played: Math.floor(player.data()['played'] / 2),
           won: Math.floor((player.data()['won'] ?? 0) / 2)
         }));
         return batch.commit();
       });
+      start += size;
+      first = false;
     }
   }
 
