@@ -51,9 +51,11 @@ async function seed(fn: (firestore: Firestore) => Promise<unknown>) {
 }
 
 beforeAll(async () => {
+  // `firebase emulators:exec` deja el host del emulador en FIRESTORE_EMULATOR_HOST (por si no es el 8080 de siempre).
+  const [host, port] = (process.env['FIRESTORE_EMULATOR_HOST'] ?? '127.0.0.1:8080').split(':');
   env = await initializeTestEnvironment({
     projectId: 'demo-hay-equipo',
-    firestore: { rules: readFileSync('firestore.rules', 'utf8'), host: '127.0.0.1', port: 8080 },
+    firestore: { rules: readFileSync('firestore.rules', 'utf8'), host, port: +port },
   });
 });
 
@@ -91,6 +93,8 @@ describe('users', () => {
     await assertFails(setDoc(doc(db('n3'), 'users/n3'), player('N', { email: 'n3@example.com' })));
     await assertFails(setDoc(doc(db('n4'), 'users/otro'), player('N')));
     await assertFails(setDoc(doc(db('n5'), 'users/n5'), player('N', { image: 'https://example.com/foto.png' })));
+    await assertFails(setDoc(doc(db('n6'), 'users/n6'), player('N', { lastGames: ['G', 'G', 'G'] })));
+    await assertFails(setDoc(doc(db('n7'), 'users/n7'), player('N', { googleLogin: false })));
   });
 
   it('cada uno cambia su apodo y su foto por la de Google', async () => {
@@ -140,6 +144,28 @@ describe('anotarse', () => {
   it('no se puede anotar a otro como si se hubiera anotado solo, ni a nombre de otro', async () => {
     await assertFails(join(db(ANA), 'amigo', subscriber('Amigo', '', 15, 5)));
     await assertFails(join(db(ANA), 'amigo', subscriber('Amigo', BETO, 15, 5)));
+  });
+
+  it('no se puede anotar como amigo a un jugador que tiene su propia cuenta', async () => {
+    await assertFails(join(db(ANA), BETO, subscriber('Beto', ANA, 8, 3)));
+    await assertFails(join(db(BETO), ANA, subscriber('Ana', BETO, 20, 12)));
+  });
+
+  it('el anotado es copia del jugador: no se cambia el apodo, la foto ni los últimos partidos', async () => {
+    await assertFails(join(db(ANA), ANA, { ...subscriber('Anita', '', 20, 12) }));
+    await assertFails(join(db(ANA), ANA, { ...subscriber('Ana', '', 20, 12), image: GOOGLE_PHOTO }));
+    await assertFails(join(db(ANA), ANA, { ...subscriber('Ana', '', 20, 12), lastGames: ['G', 'G', 'G', 'G', 'G'] }));
+    await assertFails(join(db(ANA), 'amigo', { ...subscriber('Otro Nombre', ANA, 15, 5) }));
+  });
+
+  it('se anota con los últimos partidos que tiene', async () => {
+    await seed(firestore => updateDoc(doc(firestore, `users/${ANA}`), { lastGames: ['G', 'P'] }));
+    await assertSucceeds(join(db(ANA), ANA, { ...subscriber('Ana', '', 20, 12), lastGames: ['G', 'P'] }));
+  });
+
+  it('un amigo nuevo no puede traer una foto de cualquier lado ni últimos partidos', async () => {
+    await assertFails(join(db(BETO), 'nuevo', { ...subscriber('Nuevo', BETO), image: 'https://example.com/pixel.png' }));
+    await assertFails(join(db(BETO), 'nuevo', { ...subscriber('Nuevo', BETO), lastGames: ['G'] }));
   });
 
   it('no se puede pasar del cupo', async () => {

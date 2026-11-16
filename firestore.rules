@@ -40,6 +40,8 @@ service cloud.firestore {
         && request.resource.data.roles == ['player']
         && request.resource.data.played == 0
         && request.resource.data.won == 0
+        && request.resource.data.googleLogin == true
+        && request.resource.data.get('lastGames', []) == []
         && validNickname(request.resource.data.nickname)
         && validImage(request.resource.data.image)
       );
@@ -119,23 +121,42 @@ service cloud.firestore {
           return /databases/$(database)/documents/users/$(playerId);
         }
 
-        // Las estadísticas del anotado son las del jugador (o 0 para un amigo nuevo): no se pueden inventar.
-        function realStats() {
+        // El anotado es una copia del jugador: apodo, foto, estadísticas y últimos partidos tal cual están en `users`
+        // (así no se inventa nada ni se pone una foto de cualquier lado).
+        function copyOfUser() {
           let data = request.resource.data;
-          return (exists(userPath())
-              && data.played == get(userPath()).data.played && data.won == get(userPath()).data.won)
-            || (!exists(userPath()) && data.played == 0 && data.won == 0);
+          let user = get(userPath()).data;
+          return data.nickname == user.nickname
+            && data.image == user.image
+            && data.played == user.played
+            && data.won == user.won
+            && data.get('lastGames', []) == user.get('lastGames', []);
+        }
+
+        // Un amigo nuevo (todavía sin documento en `users`): arranca de cero y con la foto por defecto o de Google.
+        function newFriend() {
+          let data = request.resource.data;
+          return validNickname(data.nickname)
+            && validImage(data.image)
+            && data.played == 0
+            && data.won == 0
+            && data.get('lastGames', []) == [];
+        }
+
+        // A otro solo se lo anota como amigo si es un amigo sin cuenta (`friend == true`) o uno nuevo:
+        // no se puede anotar a un jugador que tiene su propia cuenta.
+        function canBeFriend() {
+          return !exists(userPath()) || get(userPath()).data.get('friend', false) == true;
         }
 
         function validSubscriber() {
           let data = request.resource.data;
           return data.keys().hasOnly(['nickname', 'image', 'played', 'won', 'friendOf', 'lastGames'])
-            && validNickname(data.nickname)
             && (
               (playerId == request.auth.uid && data.friendOf == '')
-              || (playerId != request.auth.uid && data.friendOf == request.auth.uid)
+              || (playerId != request.auth.uid && data.friendOf == request.auth.uid && canBeFriend())
             )
-            && realStats();
+            && (exists(userPath()) ? copyOfUser() : newFriend());
         }
 
         allow read: if signedIn();
