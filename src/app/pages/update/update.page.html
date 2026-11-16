@@ -1,31 +1,33 @@
 <ion-header>
-    <ion-toolbar color="warning">
-        <ion-title>Actualizar App</ion-title>
+    <ion-toolbar color="primary">
+        <ion-title>Novedades</ion-title>
     </ion-toolbar>
 </ion-header>
 
 <ion-content>
 
-    <ion-card>
-        <ion-card-header>
-            <ion-card-subtitle>Actualización</ion-card-subtitle>
-            <ion-card-title>✨ Novedades</ion-card-title>
-        </ion-card-header>
+    @for (entry of entries(); track entry.version) {
+        <ion-card>
+            <ion-card-header>
+                <ion-card-subtitle>Versión {{ entry.version }}</ion-card-subtitle>
+                <ion-card-title>✨ Qué hay de nuevo</ion-card-title>
+            </ion-card-header>
 
-        <ion-card-content>
-            <ion-list>
-                @for (item of news$ | async; track item.id) {
-                    <ion-item class="ion-margin-vertical ion-text-justify">
-                        <ion-icon name="football" slot="start"></ion-icon>
-                        <p>{{ item.description }}</p>
-                    </ion-item>
-                }
-            </ion-list>
-        </ion-card-content>
-    </ion-card>
+            <ion-card-content>
+                <ion-list>
+                    @for (change of entry.changes; track $index) {
+                        <ion-item class="ion-margin-vertical ion-text-justify" lines="none">
+                            <ion-icon name="football" slot="start"></ion-icon>
+                            <p>{{ change }}</p>
+                        </ion-item>
+                    }
+                </ion-list>
+            </ion-card-content>
+        </ion-card>
+    }
 
-    <ion-button class="ion-padding" expand="block" (click)="updateApp()">
-        Actualizar
+    <ion-button class="ion-padding" expand="block" (click)="close()">
+        Dale!
     </ion-button>
 
 </ion-content>

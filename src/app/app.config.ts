@@ -12,6 +12,7 @@ import { connectFirestoreEmulator, getFirestore, provideFirestore } from '@angul
 
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
+import { AppUpdateService } from './services/app-update.service';
 import { PwaService } from './services/pwa.service';
 
 registerLocaleData(localeEsAr, 'es-AR');
@@ -44,5 +45,6 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000'
     }),
     provideAppInitializer(() => inject(PwaService).initPwaPrompt()),
+    provideAppInitializer(() => inject(AppUpdateService).init()),
   ]
 };

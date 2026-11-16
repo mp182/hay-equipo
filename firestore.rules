@@ -186,15 +186,6 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Novedades de la versión y versión publicada: se cargan desde la consola.
-    match /news/{newsId} {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    match /version/{versionId} {
-      allow read: if true;
-      allow write: if false;
-    }
+    // Las novedades de cada versión viajan con la app (src/app/changelog.ts): ya no hay colecciones `news` ni `version`.
   }
 }

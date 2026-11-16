@@ -12,10 +12,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/no-internet/no-internet.page').then(m => m.NoInternetPage)
   },
   {
-    path: 'update',
-    loadComponent: () => import('./pages/update/update.page').then(m => m.UpdatePage)
-  },
-  {
     path: '',
     canActivate: [authGuard],
     children: [

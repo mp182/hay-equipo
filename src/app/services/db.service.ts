@@ -321,11 +321,7 @@ export class DbService {
     }
   }
 
-  // ---------- Novedades y versión ----------
-
-  getNews(): Observable<News[]> {
-    return this.run(() => collectionData(collection(this.firestore, 'news'), { idField: 'id' })) as Observable<News[]>;
-  }
+  // ---------- Novedades del dashboard ----------
 
   getCardNews(): Observable<News[]> {
     return this.run(() => collectionData(collection(this.firestore, 'card-news'), { idField: 'id' })) as Observable<News[]>;
@@ -337,12 +333,6 @@ export class DbService {
 
   deleteCardNews(newsId: string) {
     return this.run(() => deleteDoc(doc(this.firestore, `card-news/${newsId}`)));
-  }
-
-  /** Versión publicada de la app (colección `version`). `undefined` si no está cargada. */
-  getVersion(): Observable<string | undefined> {
-    return (this.run(() => collectionData(collection(this.firestore, 'version'))) as Observable<{ version: string }[]>)
-      .pipe(map(versions => versions[0]?.version));
   }
 
   /** AngularFire pide que las llamadas a Firebase se hagan dentro de un contexto de inyección. */

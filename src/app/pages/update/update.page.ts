@@ -1,31 +1,30 @@
-import { AsyncPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import {
   IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
   IonItem, IonList, IonTitle, IonToolbar, ModalController
 } from '@ionic/angular';
 
-import { DbService } from 'src/app/services/db.service';
+import { ChangelogEntry } from 'src/app/changelog';
 
+/** Modal con las novedades de la versión que se acaba de abrir (lo abre `AppUpdateService.showWhatsNew`). */
 @Component({
   selector: 'app-update',
   templateUrl: './update.page.html',
   styleUrls: ['./update.page.scss'],
   imports: [
-    AsyncPipe,
     IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
     IonItem, IonList, IonTitle, IonToolbar
   ],
 })
 export class UpdatePage {
 
+  /** Se pasa como `componentProps` desde el modal. */
+  readonly entries = input<ChangelogEntry[]>([]);
+
   private readonly modalController = inject(ModalController);
 
-  readonly news$ = inject(DbService).getNews();
-
-  async updateApp() {
-    await this.modalController.dismiss().catch(() => undefined);
-    window.location.href = '/dashboard';
+  close() {
+    return this.modalController.dismiss();
   }
 
 }

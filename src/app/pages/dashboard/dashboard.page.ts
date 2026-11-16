@@ -3,9 +3,9 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   IonAvatar, IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonFab,
-  IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonLabel, IonMenuButton, IonTitle, IonToolbar, ModalController
+  IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonLabel, IonMenuButton, IonTitle, IonToolbar
 } from '@ionic/angular';
-import { combineLatest, map, take } from 'rxjs';
+import { combineLatest, map } from 'rxjs';
 
 import { ScoreComponent } from 'src/app/components/score/score.component';
 import { NewsCardComponent } from 'src/app/components/news-card/news-card.component';
@@ -13,10 +13,8 @@ import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
 import { hasAdminRole } from 'src/app/helpers/roles.helpers';
 import { Match } from 'src/app/models/match.interface';
 import { AuthenticationService } from 'src/app/services/authentication.service';
+import { AppUpdateService } from 'src/app/services/app-update.service';
 import { DbService } from 'src/app/services/db.service';
-import { ToastService } from 'src/app/services/toast.service';
-import { APP_VERSION } from 'src/app/app-version';
-import { UpdatePage } from '../update/update.page';
 
 @Component({
   selector: 'app-dashboard',
@@ -31,11 +29,8 @@ import { UpdatePage } from '../update/update.page';
 export class DashboardPage {
 
   private readonly authService = inject(AuthenticationService);
+  private readonly appUpdate = inject(AppUpdateService);
   private readonly dbService = inject(DbService);
-  private readonly modalController = inject(ModalController);
-  private readonly toastService = inject(ToastService);
-
-  private updatesSearched = false;
 
   /** Índices de los últimos 5 partidos. */
   readonly lastGamesSlots = [0, 1, 2, 3, 4];
@@ -60,25 +55,8 @@ export class DashboardPage {
   readonly news$ = this.dbService.getCardNews();
 
   ionViewDidEnter() {
-    this.searchForUpdates();
-  }
-
-  /** Si la versión publicada en Firestore es distinta a la local, ofrece actualizar. */
-  private searchForUpdates() {
-    if (this.updatesSearched) {
-      return;
-    }
-    this.updatesSearched = true;
-    this.toastService.infoToast('Buscando actualizaciones...');
-    this.dbService.getVersion().pipe(take(1)).subscribe(async remoteVersion => {
-      if (remoteVersion && APP_VERSION !== remoteVersion) {
-        const updateAppModal = await this.modalController.create({
-          component: UpdatePage,
-          backdropDismiss: false
-        });
-        await updateAppModal.present();
-      }
-    });
+    // Después de actualizar, las novedades se muestran una sola vez (ya con la sesión iniciada).
+    this.appUpdate.showWhatsNew();
   }
 
 }
