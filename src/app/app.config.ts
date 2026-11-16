@@ -7,8 +7,8 @@ import { PreloadAllModules, RouteReuseStrategy, provideRouter, withPreloading } 
 import { provideServiceWorker } from '@angular/service-worker';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getAuth, provideAuth } from '@angular/fire/auth';
-import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { connectAuthEmulator, getAuth, provideAuth } from '@angular/fire/auth';
+import { connectFirestoreEmulator, getFirestore, provideFirestore } from '@angular/fire/firestore';
 
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
@@ -25,8 +25,20 @@ export const appConfig: ApplicationConfig = {
     provideIonicAngular({ mode: 'md', useSetInputAPI: true }),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore()),
+    provideAuth(() => {
+      const auth = getAuth();
+      if (environment.useEmulators) {
+        connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+      }
+      return auth;
+    }),
+    provideFirestore(() => {
+      const firestore = getFirestore();
+      if (environment.useEmulators) {
+        connectFirestoreEmulator(firestore, 'localhost', 8080);
+      }
+      return firestore;
+    }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000'

@@ -1,0 +1,38 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hay-equipo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "start",
+        "--",
+        "--port",
+        "4200"
+      ],
+      "port": 4200
+    },
+    {
+      "name": "hay-equipo-emulators",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start:emulators",
+        "--",
+        "--port",
+        "4300"
+      ],
+      "port": 4300
+    },
+    {
+      "name": "firebase-emulators",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": [
+        "-NoProfile",
+        "-Command",
+        "$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'); npm run emulators"
+      ],
+      "port": 9099
+    }
+  ]
+}
