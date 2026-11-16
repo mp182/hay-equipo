@@ -10,7 +10,7 @@ import { combineLatest, map } from 'rxjs';
 import { ScoreComponent } from 'src/app/components/score/score.component';
 import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
 import { Player } from 'src/app/models/player.interface';
-import { DbService } from 'src/app/services/db.service';
+import { DbService, MatchFullError } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { AddNewFriendPage } from '../add-new-friend/add-new-friend.page';
@@ -90,8 +90,13 @@ export class AddFriendPage {
       await this.dbService.joinMatch(player, this.matchId);
       await this.toastService.successToast('Amigo anotado!');
       await this.router.navigateByUrl(`match/${this.matchId}`);
-    } catch {
-      await this.toastService.errorToast();
+    } catch (err) {
+      if (err instanceof MatchFullError) {
+        await this.toastService.infoToast('El partido ya está completo.');
+      } else {
+        console.error(err);
+        await this.toastService.errorToast();
+      }
     } finally {
       await this.loadingService.hideLoading();
     }

@@ -108,19 +108,6 @@ export class AuthenticationService {
     return standalone && iOS;
   }
 
-  saveFriendUser(player: Player, win: boolean) {
-    return this.run(() => setDoc(doc(this.firestore, `users/${player.id}`), {
-      nickname: titleCase(player.nickname),
-      roles: ['player'],
-      played: 1,
-      won: win ? 1 : 0,
-      image: DEFAULT_AVATAR,
-      googleLogin: false,
-      friend: true,
-      lastGames: player.lastGames ?? []
-    }));
-  }
-
   /** AngularFire pide que las llamadas a Firebase se hagan dentro de un contexto de inyección. */
   private run<T>(fn: () => T): T {
     return runInInjectionContext(this.injector, fn);

@@ -1,7 +1,7 @@
 import { EnvironmentInjector, Injectable, inject, runInInjectionContext } from '@angular/core';
 import {
-  Firestore, addDoc, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, docData,
-  query, setDoc, updateDoc, where, writeBatch
+  Firestore, addDoc, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, docData, getDocsFromServer, increment,
+  query, runTransaction, updateDoc, where, writeBatch
 } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
 
@@ -12,6 +12,25 @@ import { AuthenticationService, DEFAULT_AVATAR } from './authentication.service'
 import { titleCase } from '../helpers/string.helpers';
 
 export type Team = 'teamWhite' | 'teamBlack';
+
+/** Se lanza al querer anotar a alguien en un partido que ya está completo. */
+export class MatchFullError extends Error {
+  constructor() {
+    super('El partido ya está completo');
+    this.name = 'MatchFullError';
+  }
+}
+
+/** Se lanza al cargar el resultado de un partido que ya estaba cerrado. */
+export class MatchClosedError extends Error {
+  constructor() {
+    super('El partido ya estaba cerrado');
+    this.name = 'MatchClosedError';
+  }
+}
+
+/** Firestore admite hasta 500 escrituras por batch. */
+const BATCH_LIMIT = 500;
 
 @Injectable({ providedIn: 'root' })
 export class DbService {
@@ -56,26 +75,43 @@ export class DbService {
     )) as Observable<Player[]>;
   }
 
+  /**
+   * Anota al jugador en el partido. Usa una transacción para no pasarse del cupo
+   * aunque se anoten varios a la vez (lanza `MatchFullError` si no hay lugar).
+   */
   async joinMatch(player: Player, matchId: string): Promise<void> {
     const uid = (await this.authService.userDetails())?.uid;
-    await Promise.all([
-      this.run(() => setDoc(doc(this.firestore, `matches/${matchId}/subscribers/${player.id}`), {
+    const matchRef = this.run(() => doc(this.firestore, `matches/${matchId}`));
+    const subscriberRef = this.run(() => doc(this.firestore, `matches/${matchId}/subscribers/${player.id}`));
+
+    await this.run(() => runTransaction(this.firestore, async transaction => {
+      const match = (await transaction.get(matchRef)).data() as Match | undefined;
+      const playersList = match?.playersList ?? [];
+      if (playersList.includes(player.id)) {
+        return;
+      }
+      if (!match || playersList.length >= +match.maxPlayers) {
+        throw new MatchFullError();
+      }
+      transaction.set(subscriberRef, {
         nickname: player.nickname,
         image: player.image,
         played: player.played,
         won: player.won,
         friendOf: uid === player.id ? '' : uid,
         lastGames: player.lastGames ?? []
-      })),
-      this.run(() => updateDoc(doc(this.firestore, `matches/${matchId}`), { playersList: arrayUnion(player.id) }))
-    ]);
+      });
+      transaction.update(matchRef, { playersList: arrayUnion(player.id) });
+    }));
   }
 
-  async unsubscribe(playerId: string, matchId: string): Promise<void> {
-    await Promise.all([
-      this.run(() => deleteDoc(doc(this.firestore, `matches/${matchId}/subscribers/${playerId}`))),
-      this.run(() => updateDoc(doc(this.firestore, `matches/${matchId}`), { playersList: arrayRemove(playerId) }))
-    ]);
+  unsubscribe(playerId: string, matchId: string): Promise<void> {
+    return this.run(() => {
+      const batch = writeBatch(this.firestore);
+      batch.delete(doc(this.firestore, `matches/${matchId}/subscribers/${playerId}`));
+      batch.update(doc(this.firestore, `matches/${matchId}`), { playersList: arrayRemove(playerId) });
+      return batch.commit();
+    });
   }
 
   addNewFriend(matchId: string, nickname: string) {
@@ -118,39 +154,71 @@ export class DbService {
     });
   }
 
-  deleteFromTeam(playerId: string, matchId: string, team: Team) {
-    return this.run(() => deleteDoc(doc(this.firestore, `matches/${matchId}/${team}/${playerId}`)));
+  /** Pasa jugadores de un equipo al otro en una sola escritura. */
+  moveBetweenTeams(matchId: string, toWhite: Player[], toBlack: Player[]) {
+    return this.run(() => {
+      const batch = writeBatch(this.firestore);
+      toWhite.forEach(player => {
+        batch.delete(doc(this.firestore, `matches/${matchId}/teamBlack/${player.id}`));
+        batch.set(doc(this.firestore, `matches/${matchId}/teamWhite/${player.id}`), player);
+      });
+      toBlack.forEach(player => {
+        batch.delete(doc(this.firestore, `matches/${matchId}/teamWhite/${player.id}`));
+        batch.set(doc(this.firestore, `matches/${matchId}/teamBlack/${player.id}`), player);
+      });
+      return batch.commit();
+    });
   }
 
-  addToTeam(player: Player, matchId: string, team: Team) {
-    return this.run(() => setDoc(doc(this.firestore, `matches/${matchId}/${team}/${player.id}`), player));
-  }
-
-  async setWinner(matchId: string, team: 'white' | 'black', teamWhite: Player[], teamBlack: Player[]) {
+  /**
+   * Carga el resultado y cierra el partido, todo en una transacción:
+   * si el partido ya estaba cerrado (doble tap, dos admins a la vez) lanza `MatchClosedError` y no suma nada.
+   * Las estadísticas se leen del documento actual del jugador (no de la copia del equipo) y se suman con `increment`.
+   */
+  setWinner(matchId: string, team: 'white' | 'black', teamWhite: Player[], teamBlack: Player[]) {
     const whiteWon = team === 'white';
-    await Promise.all([
-      ...teamWhite.map(player => this.updatePlayerScore(player, whiteWon)),
-      ...teamBlack.map(player => this.updatePlayerScore(player, !whiteWon)),
-    ]);
-    return this.updateMatch(matchId);
-  }
+    const results = [
+      ...teamWhite.map(player => ({ player, win: whiteWon })),
+      ...teamBlack.map(player => ({ player, win: !whiteWon })),
+    ];
+    const matchRef = this.run(() => doc(this.firestore, `matches/${matchId}`));
+    const userRefs = results.map(({ player }) => this.run(() => doc(this.firestore, `users/${player.id}`)));
 
-  private async updatePlayerScore(player: Player, win: boolean) {
-    const lastGames = [win ? 'G' : 'P', ...(player.lastGames ?? [])].slice(0, 5);
-    const changes = win
-      ? { won: player.won + 1, played: player.played + 1, lastGames }
-      : { played: player.played + 1, lastGames };
-
-    try {
-      await this.run(() => updateDoc(doc(this.firestore, `users/${player.id}`), changes));
-    } catch (err: any) {
-      if (err?.code === 'not-found') {
-        // Es un "amigo" que todavía no tiene documento en `users`: lo creamos.
-        await this.authService.saveFriendUser({ ...player, lastGames }, win);
-      } else {
-        console.error(err?.code ?? err);
+    return this.run(() => runTransaction(this.firestore, async transaction => {
+      // En una transacción todas las lecturas van antes que las escrituras.
+      const match = await transaction.get(matchRef);
+      if (!match.exists() || match.data()['enabled'] === false) {
+        throw new MatchClosedError();
       }
-    }
+      const snapshots = await Promise.all(userRefs.map(ref => transaction.get(ref)));
+
+      results.forEach(({ player, win }, i) => {
+        const snapshot = snapshots[i];
+        const result = win ? 'G' : 'P';
+        if (snapshot.exists()) {
+          const previous = (snapshot.data()['lastGames'] as string[] | undefined) ?? [];
+          transaction.update(snapshot.ref, {
+            played: increment(1),
+            won: increment(win ? 1 : 0),
+            lastGames: [result, ...previous].slice(0, 5)
+          });
+        } else {
+          // Es un "amigo" que todavía no tiene documento en `users`: lo creamos.
+          transaction.set(userRefs[i], {
+            nickname: titleCase(player.nickname),
+            roles: ['player'],
+            played: 1,
+            won: win ? 1 : 0,
+            image: DEFAULT_AVATAR,
+            googleLogin: false,
+            friend: true,
+            lastGames: [result]
+          });
+        }
+      });
+
+      transaction.update(matchRef, { enabled: false });
+    }));
   }
 
   // ---------- Jugadores ----------
@@ -172,18 +240,24 @@ export class DbService {
     )) as Observable<Player[]>;
   }
 
-  getAllPlayers(): Observable<Player[]> {
-    return this.run(() => collectionData(collection(this.firestore, 'users'), { idField: 'id' })) as Observable<Player[]>;
-  }
-
-  /** Nueva temporada: a cada jugador le quedan la mitad de los partidos jugados y ganados. */
-  startNewSeason(players: Player[]) {
-    return Promise.all(players
-      .filter(player => player.played > 0 && player.won > 0)
-      .map(player => this.run(() => updateDoc(doc(this.firestore, `users/${player.id}`), {
-        played: player.played <= 1 ? 0 : Math.floor(player.played / 2),
-        won: player.won <= 1 ? 0 : Math.floor(player.won / 2)
-      }))));
+  /**
+   * Nueva temporada: a cada jugador le quedan la mitad de los partidos jugados y ganados.
+   * Lee los jugadores directo del servidor: la primera respuesta de un listener puede venir de la caché local
+   * (con solo el jugador logueado) y la temporada se aplicaría a medias.
+   */
+  async startNewSeason() {
+    const snapshot = await this.run(() => getDocsFromServer(collection(this.firestore, 'users')));
+    const toUpdate = snapshot.docs.filter(player => (player.data()['played'] ?? 0) > 0);
+    for (let start = 0; start < toUpdate.length; start += BATCH_LIMIT) {
+      await this.run(() => {
+        const batch = writeBatch(this.firestore);
+        toUpdate.slice(start, start + BATCH_LIMIT).forEach(player => batch.update(player.ref, {
+          played: Math.floor(player.data()['played'] / 2),
+          won: Math.floor((player.data()['won'] ?? 0) / 2)
+        }));
+        return batch.commit();
+      });
+    }
   }
 
   // ---------- Novedades y versión ----------

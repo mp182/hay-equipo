@@ -6,7 +6,7 @@ import {
 } from '@ionic/angular';
 
 import { Player } from 'src/app/models/player.interface';
-import { DbService } from 'src/app/services/db.service';
+import { DbService, MatchFullError } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -57,8 +57,14 @@ export class AddNewFriendPage {
       await this.dismiss();
       await this.toastService.successToast('Amigo nuevo registrado!');
       this.navCtrl.back();
-    } catch {
-      await this.toastService.errorToast();
+    } catch (err) {
+      if (err instanceof MatchFullError) {
+        await this.dismiss();
+        await this.toastService.infoToast('El partido ya está completo.');
+      } else {
+        console.error(err);
+        await this.toastService.errorToast();
+      }
     } finally {
       await this.loadingService.hideLoading();
     }

@@ -4,8 +4,6 @@ import {
   IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle,
   IonContent, IonHeader, IonTitle, IonToolbar
 } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
-
 import { DbService } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -29,8 +27,7 @@ export class NewSeasonPage {
   async newSeason() {
     await this.loadingService.showLoading();
     try {
-      const players = await firstValueFrom(this.db.getAllPlayers());
-      await this.db.startNewSeason(players);
+      await this.db.startNewSeason();
       await this.router.navigateByUrl('dashboard');
       await this.toastService.successToast('Nueva Temporada 🔃✔');
     } catch {

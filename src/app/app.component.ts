@@ -39,7 +39,24 @@ export class AppComponent {
 
     inject(ConnectionService).monitor()
       .pipe(takeUntilDestroyed(inject(DestroyRef)))
-      .subscribe(isConnected => this.router.navigateByUrl(isConnected ? 'dashboard' : 'no-internet'));
+      .subscribe(isConnected => this.onConnectionChange(isConnected));
+  }
+
+  /** Pantalla en la que estaba el usuario cuando se cortó la conexión, para volver ahí. */
+  private urlBeforeOffline?: string;
+
+  private onConnectionChange(isConnected: boolean) {
+    if (!isConnected) {
+      if (!this.router.url.startsWith('/no-internet')) {
+        this.urlBeforeOffline = this.router.url;
+      }
+      this.router.navigateByUrl('no-internet');
+      return;
+    }
+    // Si se cortó en el login (o nunca supimos dónde estaba), el guard decide adónde ir desde el dashboard.
+    const target = this.urlBeforeOffline && this.urlBeforeOffline !== '/' ? this.urlBeforeOffline : 'dashboard';
+    this.urlBeforeOffline = undefined;
+    this.router.navigateByUrl(target, { replaceUrl: true });
   }
 
   async logout() {

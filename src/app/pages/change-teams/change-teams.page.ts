@@ -46,6 +46,10 @@ export class ChangeTeamsPage implements OnInit {
   private subscription?: Subscription;
 
   ngOnInit() {
+    this.listenTeams();
+  }
+
+  private listenTeams() {
     this.subscription = combineLatest([this.db.getTeamWhite(this.matchId), this.db.getTeamBlack(this.matchId)])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([teamWhite, teamBlack]) => {
@@ -78,22 +82,16 @@ export class ChangeTeamsPage implements OnInit {
 
     await this.loadingService.showLoading();
     try {
-      await Promise.all([
-        ...movedToWhite.flatMap(player => [
-          this.db.deleteFromTeam(player.id, this.matchId, 'teamBlack'),
-          this.db.addToTeam(player, this.matchId, 'teamWhite'),
-        ]),
-        ...movedToBlack.flatMap(player => [
-          this.db.deleteFromTeam(player.id, this.matchId, 'teamWhite'),
-          this.db.addToTeam(player, this.matchId, 'teamBlack'),
-        ]),
-      ]);
+      await this.db.moveBetweenTeams(this.matchId, movedToWhite, movedToBlack);
       await this.toastService.successToast('Se cambiaron los equipos!');
-    } catch {
+      await this.router.navigate(['/match', this.matchId]);
+    } catch (err) {
+      console.error(err);
       await this.toastService.errorToast();
+      // Volvemos a escuchar los equipos para que la lista muestre lo que realmente quedó guardado.
+      this.listenTeams();
     } finally {
       await this.loadingService.hideLoading();
-      await this.router.navigate(['/match', this.matchId]);
     }
   }
 

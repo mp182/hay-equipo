@@ -16,7 +16,7 @@ import { sortByScore } from 'src/app/helpers/score.helpers';
 import { Match } from 'src/app/models/match.interface';
 import { Player } from 'src/app/models/player.interface';
 import { AuthenticationService } from 'src/app/services/authentication.service';
-import { DbService } from 'src/app/services/db.service';
+import { DbService, MatchClosedError, MatchFullError } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -79,7 +79,7 @@ export class MatchPage implements OnInit {
           // El partido se considera terminado una hora después de empezar.
           const matchEnd = match.date.toDate().getTime() + 60 * 60 * 1000;
           this.matchOver.set(Date.now() > matchEnd);
-          this.fullMatch.set((match.playersList?.length ?? 0) === +match.maxPlayers);
+          this.fullMatch.set((match.playersList?.length ?? 0) >= +match.maxPlayers);
           this.subscribed.set(!!player && (match.playersList ?? []).includes(player.id));
         }
       });
@@ -125,8 +125,7 @@ export class MatchPage implements OnInit {
 
   /** Arma los equipos de forma pareja intercalando a los jugadores según su promedio. */
   async teams() {
-    const score = (p: Player) => p.played < 10 || p.won === 0 ? 50 : (p.won / p.played) * 100;
-    const players = [...this.players()].sort((a, b) => score(b) - score(a));
+    const players = sortByScore(this.players());
 
     const picks: Record<number, { white: number[]; black: number[] }> = {
       12: { white: [0, 11, 2, 9, 4, 7], black: [1, 10, 3, 8, 5, 6] },
@@ -213,8 +212,14 @@ export class MatchPage implements OnInit {
       }
       return true;
     } catch (err) {
-      console.error(err);
-      await this.toastService.errorToast();
+      if (err instanceof MatchFullError) {
+        await this.toastService.infoToast('Uy, el partido se llenó justo! No quedan lugares.');
+      } else if (err instanceof MatchClosedError) {
+        await this.toastService.infoToast('Este partido ya estaba cerrado.');
+      } else {
+        console.error(err);
+        await this.toastService.errorToast();
+      }
       return false;
     } finally {
       await this.loadingService.hideLoading();
