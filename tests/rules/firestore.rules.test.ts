@@ -203,6 +203,22 @@ describe('partidos, equipos y resultado', () => {
     await assertFails(setDoc(doc(db(ADMIN), `${MATCH}/otraCosa/${BETO}`), subscriber('Beto', '', 8, 3)));
   });
 
+  it('un admin baja a alguien y lo saca de los equipos en la misma escritura (como `DbService.unsubscribe`)', async () => {
+    await seed(firestore => setDoc(doc(firestore, `${MATCH}/teamWhite/${BETO}`), subscriber('Beto', '', 8, 3)));
+    const firestore = db(ADMIN);
+    const batch = writeBatch(firestore);
+    batch.delete(doc(firestore, `${MATCH}/subscribers/${BETO}`));
+    batch.update(doc(firestore, MATCH), { playersList: arrayRemove(BETO) });
+    batch.delete(doc(firestore, `${MATCH}/teamWhite/${BETO}`));
+    batch.delete(doc(firestore, `${MATCH}/teamBlack/${BETO}`));
+    await assertSucceeds(batch.commit());
+  });
+
+  it('un jugador no puede sacar a nadie de los equipos, ni a sí mismo', async () => {
+    await seed(firestore => setDoc(doc(firestore, `${MATCH}/teamWhite/${BETO}`), subscriber('Beto', '', 8, 3)));
+    await assertFails(deleteDoc(doc(db(BETO), `${MATCH}/teamWhite/${BETO}`)));
+  });
+
   it('un admin carga el resultado (como `DbService.setWinner`)', async () => {
     const firestore = db(ADMIN);
     await assertSucceeds(runTransaction(firestore, async transaction => {

@@ -10,8 +10,19 @@ import { News } from '../models/news.interface';
 import { Player } from '../models/player.interface';
 import { AuthenticationService, DEFAULT_AVATAR } from './authentication.service';
 import { titleCase } from '../helpers/string.helpers';
+import { teamsOutOfDate } from '../helpers/teams.helpers';
 
 export type Team = 'teamWhite' | 'teamBlack';
+
+const TEAMS: Team[] = ['teamWhite', 'teamBlack'];
+
+/** Se lanza al cargar el resultado si los equipos no coinciden con los anotados: hay que volver a armarlos. */
+export class TeamsOutOfDateError extends Error {
+  constructor() {
+    super('Los equipos no coinciden con los anotados');
+    this.name = 'TeamsOutOfDateError';
+  }
+}
 
 /** Se lanza al querer anotar a alguien en un partido que ya está completo. */
 export class MatchFullError extends Error {
@@ -107,11 +118,18 @@ export class DbService {
     }));
   }
 
-  unsubscribe(playerId: string, matchId: string): Promise<void> {
+  /**
+   * Baja al jugador del partido. Con `removeFromTeams` (solo admins: las reglas no dejan a los demás tocar los equipos)
+   * también lo saca de los equipos ya armados, para que no le cuente el resultado.
+   */
+  unsubscribe(playerId: string, matchId: string, removeFromTeams = false): Promise<void> {
     return this.run(() => {
       const batch = writeBatch(this.firestore);
       batch.delete(doc(this.firestore, `matches/${matchId}/subscribers/${playerId}`));
       batch.update(doc(this.firestore, `matches/${matchId}`), { playersList: arrayRemove(playerId) });
+      if (removeFromTeams) {
+        TEAMS.forEach(team => batch.delete(doc(this.firestore, `matches/${matchId}/${team}/${playerId}`)));
+      }
       return batch.commit();
     });
   }
@@ -146,9 +164,16 @@ export class DbService {
     return this.getTeam(matchId, 'teamBlack');
   }
 
-  setTeams(matchId: string, teamWhite: Player[], teamBlack: Player[]) {
+  /**
+   * Arma los equipos desde cero: borra los que hubiera (por ejemplo, de antes de que alguien se bajara)
+   * y guarda los nuevos, todo en una escritura.
+   */
+  async setTeams(matchId: string, teamWhite: Player[], teamBlack: Player[]) {
+    const previous = await Promise.all(TEAMS.map(team =>
+      this.run(() => getDocsFromServer(collection(this.firestore, `matches/${matchId}/${team}`)))));
     return this.run(() => {
       const batch = writeBatch(this.firestore);
+      previous.forEach(snapshot => snapshot.docs.forEach(player => batch.delete(player.ref)));
       teamWhite.forEach(player => batch.set(doc(this.firestore, `matches/${matchId}/teamWhite/${player.id}`), player));
       teamBlack.forEach(player => batch.set(doc(this.firestore, `matches/${matchId}/teamBlack/${player.id}`), player));
       return batch.commit();
@@ -173,7 +198,8 @@ export class DbService {
 
   /**
    * Carga el resultado y cierra el partido, todo en una transacción:
-   * si el partido ya estaba cerrado (doble tap, dos admins a la vez) lanza `MatchClosedError` y no suma nada.
+   * si el partido ya estaba cerrado (doble tap, dos admins a la vez) lanza `MatchClosedError`, y si los equipos
+   * no coinciden con los anotados lanza `TeamsOutOfDateError`; en los dos casos no suma nada.
    * Las estadísticas se leen del documento actual del jugador (no de la copia del equipo) y se suman con `increment`.
    */
   setWinner(matchId: string, team: 'white' | 'black', teamWhite: Player[], teamBlack: Player[]) {
@@ -193,6 +219,10 @@ export class DbService {
       const match = await transaction.get(matchRef);
       if (!match.exists() || match.data()['enabled'] === false) {
         throw new MatchClosedError();
+      }
+      // Solo cuenta para los que están anotados ahora: si los equipos quedaron viejos, no se suma nada.
+      if (teamsOutOfDate(match.data()['playersList'] ?? [], teamWhite, teamBlack)) {
+        throw new TeamsOutOfDateError();
       }
       const snapshots = await Promise.all(userRefs.map(ref => transaction.get(ref)));
 

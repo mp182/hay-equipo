@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -16,7 +16,8 @@ import { sortByScore } from 'src/app/helpers/score.helpers';
 import { Match } from 'src/app/models/match.interface';
 import { Player } from 'src/app/models/player.interface';
 import { AuthenticationService } from 'src/app/services/authentication.service';
-import { DbService, MatchClosedError, MatchFullError } from 'src/app/services/db.service';
+import { teamsOutOfDate } from 'src/app/helpers/teams.helpers';
+import { DbService, MatchClosedError, MatchFullError, TeamsOutOfDateError } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -49,6 +50,11 @@ export class MatchPage implements OnInit {
   readonly players = signal<Player[]>([]);
   readonly teamWhite = signal<Player[]>([]);
   readonly teamBlack = signal<Player[]>([]);
+
+  readonly hasTeams = computed(() => this.teamWhite().length + this.teamBlack().length > 0);
+  /** Los equipos armados ya no son los anotados (alguien se bajó o entró después): hay que volver a armarlos. */
+  readonly teamsOutdated = computed(() =>
+    this.hasTeams() && teamsOutOfDate(this.match()?.playersList ?? [], this.teamWhite(), this.teamBlack()));
 
   readonly fullMatch = signal(false);
   readonly matchOver = signal(false);
@@ -100,14 +106,15 @@ export class MatchPage implements OnInit {
 
   /**
    * Quién ve la ✕ para bajar a un anotado: los admins pueden bajar a cualquiera;
-   * los demás, solo a los amigos que anotaron. Uno mismo se baja con "Me bajo".
+   * los demás, solo a los amigos que anotaron y mientras no haya equipos armados (como "No voy a jugar"),
+   * porque solo los admins pueden sacarlos también de los equipos. Uno mismo se baja con "Me bajo".
    */
   canRemove(subscriber: Player) {
     const me = this.player()?.id;
     if (subscriber.id === me) {
       return false;
     }
-    return this.isAdmin() || (!!subscriber.friendOf && subscriber.friendOf === me);
+    return this.isAdmin() || (!this.hasTeams() && !!subscriber.friendOf && subscriber.friendOf === me);
   }
 
   addFriend() {
@@ -136,7 +143,7 @@ export class MatchPage implements OnInit {
       ? ['Eliminar amigo?', 'Amigo eliminado!']
       : ['Bajar del partido?', `${subscriber.nickname} ya no está anotado.`];
     return this.confirm(header, `Bajar a ${subscriber.nickname}?`, 'No, le erré!', 'Si, ya fue!',
-      () => this.withLoading(() => this.db.unsubscribe(subscriber.id, this.matchId), done));
+      () => this.withLoading(() => this.db.unsubscribe(subscriber.id, this.matchId, this.isAdmin()), done));
   }
 
   /** Arma los equipos de forma pareja intercalando a los jugadores según su promedio. */
@@ -161,6 +168,10 @@ export class MatchPage implements OnInit {
   }
 
   async theWinnerIs() {
+    if (this.teamsOutdated()) {
+      await this.toastService.infoToast('Los equipos no coinciden con los anotados. Volvé a armarlos.');
+      return;
+    }
     await this.showAlert({
       header: 'El ganador es...',
       message: '¿Quién ganó?',
@@ -232,6 +243,8 @@ export class MatchPage implements OnInit {
         await this.toastService.infoToast('Uy, el partido se llenó justo! No quedan lugares.');
       } else if (err instanceof MatchClosedError) {
         await this.toastService.infoToast('Este partido ya estaba cerrado.');
+      } else if (err instanceof TeamsOutOfDateError) {
+        await this.toastService.infoToast('Los equipos no coinciden con los anotados. Volvé a armarlos.');
       } else {
         console.error(err);
         await this.toastService.errorToast();

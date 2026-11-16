@@ -22,8 +22,15 @@
                         </ion-card-title>
                     </ion-card-header>
                     <ion-card-content>
-                        @if (!matchOver() && fullMatch()) {
-                            @if (teamBlack().length === 0) {
+                        @if (teamsOutdated()) {
+                            <p class="ion-margin">
+                                <ion-icon name="information-circle" color="warning"></ion-icon>
+                                Los equipos ya no coinciden con los anotados.
+                                {{ fullMatch() ? 'Volvé a armarlos.' : 'Cuando se complete el partido, volvé a armarlos.' }}
+                            </p>
+                        }
+                        @if (fullMatch() && (!matchOver() || teamsOutdated())) {
+                            @if (!hasTeams() || teamsOutdated()) {
                                 <ion-button color="primary" expand="block" class="ion-margin" (click)="teams()">
                                     <ion-icon name="football" class="ion-margin"></ion-icon>
                                     Armar Equipos
@@ -38,7 +45,7 @@
                                 </ion-button>
                             }
                         }
-                        @if (matchOver() && fullMatch()) {
+                        @if (matchOver() && fullMatch() && hasTeams() && !teamsOutdated()) {
                             <ion-button color="success" expand="block" class="ion-margin" (click)="theWinnerIs()">
                                 <ion-icon name="trophy" class="ion-margin"></ion-icon>
                                 ¿ Quién ganó ?
@@ -87,7 +94,7 @@
                 </ion-card>
             }
 
-            @if (teamBlack().length === 0) {
+            @if (!hasTeams()) {
                 <ion-card>
                     <ion-card-header>
                         <ion-card-title>
@@ -152,7 +159,7 @@
                 </ion-card>
             }
 
-            @if (teamBlack().length > 0) {
+            @if (hasTeams()) {
                 <ion-toolbar color="light" mode="ios">
                     <ion-label slot="start" class="ion-margin-horizontal">
                         <ion-icon name="flag" style="color: black;"></ion-icon>
@@ -201,7 +208,7 @@
         </ion-footer>
     }
 
-    @if ((subscribed() || isAdmin('superadmin')) && teamBlack().length === 0 && !fullMatch()) {
+    @if ((subscribed() || isAdmin('superadmin')) && !hasTeams() && !fullMatch()) {
         <ion-footer>
             <ion-toolbar color="tertiary" (click)="addFriend()">
                 <ion-buttons slot="start">
@@ -214,7 +221,7 @@
         </ion-footer>
     }
 
-    @if (subscribed() && teamBlack().length === 0) {
+    @if (subscribed() && !hasTeams()) {
         <ion-footer>
             <ion-toolbar color="danger" (click)="unsubscribeAlert()">
                 <ion-buttons slot="start">

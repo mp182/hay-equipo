@@ -2,6 +2,7 @@ import { nextSaturday, toLocalIsoString } from './date.helpers';
 import { firebaseErrors } from './firebaseErrors';
 import { playerScore, sortByScore } from './score.helpers';
 import { titleCase } from './string.helpers';
+import { teamsOutOfDate } from './teams.helpers';
 
 describe('playerScore', () => {
   it('vale 50 con menos de 10 partidos jugados', () => {
@@ -46,5 +47,29 @@ describe('firebaseErrors', () => {
 
   it('no muestra error si se cierra el popup de Google', () => {
     expect(firebaseErrors('auth/popup-closed-by-user')).toBe('');
+  });
+});
+
+describe('teamsOutOfDate', () => {
+  const ids = (...list: string[]) => list.map(id => ({ id }));
+
+  it('los equipos coinciden con los anotados', () => {
+    expect(teamsOutOfDate(['a', 'b', 'c', 'd'], ids('a', 'c'), ids('b', 'd'))).toBe(false);
+  });
+
+  it('alguien se bajó después de armar los equipos', () => {
+    expect(teamsOutOfDate(['a', 'b', 'c'], ids('a', 'c'), ids('b', 'd'))).toBe(true);
+  });
+
+  it('alguien entró después de armar los equipos', () => {
+    expect(teamsOutOfDate(['a', 'b', 'c', 'd', 'e'], ids('a', 'c'), ids('b', 'd'))).toBe(true);
+  });
+
+  it('alguien quedó en los dos equipos', () => {
+    expect(teamsOutOfDate(['a', 'b', 'c'], ids('a', 'c'), ids('b', 'c'))).toBe(true);
+  });
+
+  it('sin equipos armados no coinciden', () => {
+    expect(teamsOutOfDate(['a', 'b'], [], [])).toBe(true);
   });
 });
