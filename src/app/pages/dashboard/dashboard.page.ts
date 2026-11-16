@@ -10,6 +10,7 @@ import { combineLatest, map, take } from 'rxjs';
 import { ScoreComponent } from 'src/app/components/score/score.component';
 import { NewsCardComponent } from 'src/app/components/news-card/news-card.component';
 import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
+import { hasAdminRole } from 'src/app/helpers/roles.helpers';
 import { Match } from 'src/app/models/match.interface';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { DbService } from 'src/app/services/db.service';
@@ -40,6 +41,9 @@ export class DashboardPage {
   readonly lastGamesSlots = [0, 1, 2, 3, 4];
 
   readonly player$ = this.authService.player$;
+
+  /** El mismo chequeo que las reglas de Firestore: admins y superadmins (o solo el rol pedido). */
+  readonly hasAdminRole = hasAdminRole;
 
   /** Partidos habilitados, ordenados por fecha y con el estado del jugador logueado. */
   readonly matches$ = combineLatest([this.dbService.getEnabledMatches(), this.player$]).pipe(

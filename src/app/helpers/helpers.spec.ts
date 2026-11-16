@@ -1,6 +1,7 @@
 import { nextSaturday, toLocalIsoString } from './date.helpers';
 import { firebaseErrors } from './firebaseErrors';
 import { playerScore, sortByScore } from './score.helpers';
+import { hasAdminRole } from './roles.helpers';
 import { titleCase } from './string.helpers';
 import { teamsOutOfDate } from './teams.helpers';
 
@@ -71,5 +72,19 @@ describe('teamsOutOfDate', () => {
 
   it('sin equipos armados no coinciden', () => {
     expect(teamsOutOfDate(['a', 'b'], [], [])).toBe(true);
+  });
+});
+
+describe('hasAdminRole', () => {
+  it('admins y superadmins son admins, como en las reglas', () => {
+    expect(hasAdminRole({ roles: ['player', 'admin'] })).toBe(true);
+    expect(hasAdminRole({ roles: ['player', 'superadmin'] })).toBe(true);
+    expect(hasAdminRole({ roles: ['player'] })).toBe(false);
+    expect(hasAdminRole(null)).toBe(false);
+  });
+
+  it('con un rol pide solo ese', () => {
+    expect(hasAdminRole({ roles: ['player', 'admin'] }, 'superadmin')).toBe(false);
+    expect(hasAdminRole({ roles: ['player', 'superadmin'] }, 'superadmin')).toBe(true);
   });
 });

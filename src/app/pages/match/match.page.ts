@@ -16,6 +16,7 @@ import { sortByScore } from 'src/app/helpers/score.helpers';
 import { Match } from 'src/app/models/match.interface';
 import { Player } from 'src/app/models/player.interface';
 import { AuthenticationService } from 'src/app/services/authentication.service';
+import { AdminRole, hasAdminRole } from 'src/app/helpers/roles.helpers';
 import { teamsOutOfDate } from 'src/app/helpers/teams.helpers';
 import { DbService, MatchClosedError, MatchFullError, TeamsOutOfDateError } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
@@ -95,13 +96,9 @@ export class MatchPage implements OnInit {
     this.alert?.dismiss();
   }
 
-  /**
-   * Sin argumento: `true` para admins y superadmins (igual que `isAdmin()` en las reglas de Firestore).
-   * Con un rol: solo ese rol (por ejemplo, lo que es exclusivo del superadmin).
-   */
-  isAdmin(role?: 'admin' | 'superadmin') {
-    const roles = this.player()?.roles ?? [];
-    return role ? roles.includes(role) : roles.includes('admin') || roles.includes('superadmin');
+  /** Ver `hasAdminRole`: sin rol, admins y superadmins; con un rol, solo ese. */
+  isAdmin(role?: AdminRole) {
+    return hasAdminRole(this.player(), role);
   }
 
   /**

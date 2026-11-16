@@ -108,11 +108,11 @@
                 </ion-card-content>
             </ion-card>
 
-            <app-news-card [news]="news$ | async" [admin]="!!player.roles?.includes('admin')"></app-news-card>
+            <app-news-card [news]="news$ | async" [admin]="hasAdminRole(player)"></app-news-card>
 
         </ion-grid>
 
-        @if (player.roles?.includes('admin')) {
+        @if (hasAdminRole(player)) {
             <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="ion-margin">
                 <ion-fab-button>
                     <ion-icon name="add-circle-outline"></ion-icon>
@@ -124,7 +124,7 @@
                     <ion-fab-button routerLink="/add-news">
                         <ion-icon name="information-circle"></ion-icon>
                     </ion-fab-button>
-                    @if (player.roles.includes('superadmin')) {
+                    @if (hasAdminRole(player, 'superadmin')) {
                         <ion-fab-button routerLink="/new-season">
                             <ion-icon name="refresh"></ion-icon>
                         </ion-fab-button>
