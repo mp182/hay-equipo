@@ -15,7 +15,7 @@ import { Match } from 'src/app/models/match.interface';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { DbService } from 'src/app/services/db.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { environment } from 'src/environments/environment';
+import { APP_VERSION } from 'src/app/app-version';
 import { UpdatePage } from '../update/update.page';
 
 @Component({
@@ -71,7 +71,7 @@ export class DashboardPage {
     this.updatesSearched = true;
     this.toastService.infoToast('Buscando actualizaciones...');
     this.dbService.getVersion().pipe(take(1)).subscribe(async remoteVersion => {
-      if (remoteVersion && environment.version !== remoteVersion) {
+      if (remoteVersion && APP_VERSION !== remoteVersion) {
         const updateAppModal = await this.modalController.create({
           component: UpdatePage,
           backdropDismiss: false

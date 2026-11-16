@@ -8,6 +8,5 @@ export const environment = {
     projectId: 'demo-hay-equipo',
     appId: 'demo-app'
   },
-  useEmulators: true,
-  version: '2.0.0'
+  useEmulators: true
 };

@@ -4,7 +4,7 @@ import {
   IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonTitle, IonToolbar, MenuController
 } from '@ionic/angular';
 import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
-import { environment } from 'src/environments/environment';
+import { APP_VERSION } from 'src/app/app-version';
 
 @Component({
   selector: 'app-about',
@@ -17,7 +17,7 @@ import { environment } from 'src/environments/environment';
 })
 export class AboutPage {
 
-  readonly version = environment.version;
+  readonly version = APP_VERSION;
 
   private readonly menuCtrl = inject(MenuController);
 
