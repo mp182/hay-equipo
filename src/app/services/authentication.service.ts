@@ -2,7 +2,7 @@ import { EnvironmentInjector, Injectable, inject, runInInjectionContext } from '
 import {
   Auth, GoogleAuthProvider, User, getRedirectResult, signInWithPopup, signInWithRedirect, signOut, user
 } from '@angular/fire/auth';
-import { Firestore, doc, docData, getDoc, setDoc } from '@angular/fire/firestore';
+import { Firestore, doc, docData, getDoc, setDoc, updateDoc } from '@angular/fire/firestore';
 import { Observable, of, shareReplay, switchMap, map } from 'rxjs';
 
 import { Player } from '../models/player.interface';
@@ -17,14 +17,17 @@ export class AuthenticationService {
   private readonly firestore = inject(Firestore);
   private readonly injector = inject(EnvironmentInjector);
 
-  /** El jugador logueado (documento `users/{uid}`), o `null` si no hay sesión. */
+  /**
+   * El jugador logueado (documento `users/{uid}`), o `null` si no hay sesión.
+   * El email no se guarda en el perfil (lo pueden leer todos los jugadores): sale de la cuenta de Google.
+   */
   readonly player$: Observable<Player | null> = user(this.auth).pipe(
     switchMap(currentUser => {
       if (!currentUser) {
         return of(null);
       }
       return this.run(() => docData(doc(this.firestore, `users/${currentUser.uid}`))).pipe(
-        map(data => ({ ...(data as Player), id: currentUser.uid }))
+        map(data => ({ ...(data as Player), id: currentUser.uid, email: currentUser.email ?? '' }))
       );
     }),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -82,22 +85,36 @@ export class AuthenticationService {
     return true;
   }
 
-  /** Crea el documento del jugador la primera vez que entra. */
+  /**
+   * Crea el documento del jugador la primera vez que entra y, las siguientes, le actualiza la foto
+   * si la cambió en Google (Firebase trae la foto nueva de Google recién al volver a iniciar sesión).
+   */
   private async ensurePlayer(account: User) {
     const ref = this.run(() => doc(this.firestore, `users/${account.uid}`));
     const snapshot = await this.run(() => getDoc(ref));
-    if (snapshot.exists()) {
+    const image = this.googlePhoto(account) ?? DEFAULT_AVATAR;
+
+    if (!snapshot.exists()) {
+      await this.run(() => setDoc(ref, {
+        nickname: titleCase(account.displayName?.split(' ')[0] ?? 'Jugador'),
+        roles: ['player'],
+        played: 0,
+        won: 0,
+        image,
+        googleLogin: true
+      }));
       return;
     }
-    await this.run(() => setDoc(ref, {
-      nickname: titleCase(account.displayName?.split(' ')[0] ?? 'Jugador'),
-      roles: ['player'],
-      played: 0,
-      won: 0,
-      image: account.photoURL ?? DEFAULT_AVATAR,
-      email: account.email,
-      googleLogin: true
-    }));
+
+    if (snapshot.data()['image'] !== image) {
+      // Si falla, no es motivo para no dejarlo entrar: queda la foto anterior.
+      await this.run(() => updateDoc(ref, { image })).catch(err => console.error(err));
+    }
+  }
+
+  /** La foto actual de la cuenta de Google (la del proveedor, que Firebase actualiza en cada inicio de sesión). */
+  private googlePhoto(account: User): string | null {
+    return account.providerData.find(info => info.providerId === 'google.com')?.photoURL ?? account.photoURL;
   }
 
   /** En la PWA instalada en iPhone/iPad los popups no son confiables: conviene ir directo a la redirección. */

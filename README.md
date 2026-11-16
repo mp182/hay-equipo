@@ -13,6 +13,18 @@ This project was generated with [Ionic CLI](https://ionicframework.com/docs/cli)
 - `npm start` levanta la app en http://localhost:4200.
 - `npm run build` genera la versión de producción en `www/` (con service worker / PWA).
 - `npm test` corre los tests (Vitest) y `npm run lint` el linter.
+- `npm run test:rules` corre los tests de las reglas de Firestore contra el emulador (necesita Java y `firebase-tools`).
+
+### Probar con los emuladores
+
+Para probar sin tocar la base real (proyecto `demo-hay-equipo`, solo en tu máquina):
+
+1. `npm run emulators` levanta Auth y Firestore locales (necesita Java).
+2. `npm run start:emulators` levanta la app en http://localhost:4300 contra los emuladores.
+3. Entrá con una cuenta de prueba (el emulador muestra su propia pantalla de Google: "Add new account" → "Auto-generate user information").
+4. `npm run emulators:seed` carga un partido de prueba y deja como admin a las cuentas que ya entraron.
+
+Los datos del emulador se borran al cerrarlo.
 
 Stack: Angular 21 (standalone + signals), Ionic 9, AngularFire 21 / Firebase 12, Capacitor 8.
 

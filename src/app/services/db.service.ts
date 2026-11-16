@@ -83,6 +83,8 @@ export class DbService {
     const uid = (await this.authService.userDetails())?.uid;
     const matchRef = this.run(() => doc(this.firestore, `matches/${matchId}`));
     const subscriberRef = this.run(() => doc(this.firestore, `matches/${matchId}/subscribers/${player.id}`));
+    // Los helpers de AngularFire se arman acá: dentro de la transacción ya no hay contexto de inyección.
+    const addToList = this.run(() => arrayUnion(player.id));
 
     await this.run(() => runTransaction(this.firestore, async transaction => {
       const match = (await transaction.get(matchRef)).data() as Match | undefined;
@@ -101,7 +103,7 @@ export class DbService {
         friendOf: uid === player.id ? '' : uid,
         lastGames: player.lastGames ?? []
       });
-      transaction.update(matchRef, { playersList: arrayUnion(player.id) });
+      transaction.update(matchRef, { playersList: addToList });
     }));
   }
 
@@ -121,7 +123,6 @@ export class DbService {
       played: 0,
       won: 0,
       image: DEFAULT_AVATAR,
-      email: '',
       roles: [],
       googleLogin: false,
       lastGames: []
@@ -183,6 +184,9 @@ export class DbService {
     ];
     const matchRef = this.run(() => doc(this.firestore, `matches/${matchId}`));
     const userRefs = results.map(({ player }) => this.run(() => doc(this.firestore, `users/${player.id}`)));
+    // Los helpers de AngularFire se arman acá: dentro de la transacción ya no hay contexto de inyección.
+    const plusOne = this.run(() => increment(1));
+    const plusZero = this.run(() => increment(0));
 
     return this.run(() => runTransaction(this.firestore, async transaction => {
       // En una transacción todas las lecturas van antes que las escrituras.
@@ -198,8 +202,8 @@ export class DbService {
         if (snapshot.exists()) {
           const previous = (snapshot.data()['lastGames'] as string[] | undefined) ?? [];
           transaction.update(snapshot.ref, {
-            played: increment(1),
-            won: increment(win ? 1 : 0),
+            played: plusOne,
+            won: win ? plusOne : plusZero,
             lastGames: [result, ...previous].slice(0, 5)
           });
         } else {

@@ -107,3 +107,6 @@ resources/ios/splash/Default~iphone.png
 
 # Angular cache
 /.angular/cache
+
+# Emuladores de Firebase
+*-debug.log

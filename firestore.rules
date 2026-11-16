@@ -1,5 +1,6 @@
 rules_version = '2';
 
+// Tests: `npm run test:rules` (corre contra el emulador de Firestore).
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -15,38 +16,156 @@ service cloud.firestore {
       return signedIn() && roles().hasAny(['admin', 'superadmin']);
     }
 
-    // Jugadores. Cada uno edita su propio documento (sin tocar sus roles).
-    // Los admins actualizan estadísticas y crean a los "amigos" sin cuenta.
+    function validNickname(nickname) {
+      return nickname is string && nickname.size() >= 1 && nickname.size() <= 30;
+    }
+
+    // La foto de perfil es la de la cuenta de Google o la de por defecto (no se usa Storage).
+    function validImage(image) {
+      return image == 'assets/img/playerAvatar.png'
+        || (image is string && image.matches('https://[a-z0-9-]+[.]googleusercontent[.]com/.+'));
+    }
+
+    // ---------- Jugadores ----------
+    // Cada uno crea su perfil (sin roles ni estadísticas) y después solo puede cambiar su apodo y su foto
+    // (la app la actualiza cuando la cambian en Google).
+    // Los admins actualizan estadísticas, crean a los "amigos" sin cuenta y arrancan la temporada.
+    // El email no se guarda acá: este documento lo leen todos los jugadores.
     match /users/{userId} {
       allow read: if signedIn();
-      allow create: if (signedIn() && request.auth.uid == userId && request.resource.data.roles == ['player'])
-        || isAdmin();
-      allow update: if (signedIn() && request.auth.uid == userId
-          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['roles', 'played', 'won', 'lastGames']))
-        || isAdmin();
+
+      allow create: if isAdmin() || (
+        signedIn() && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['nickname', 'roles', 'played', 'won', 'image', 'googleLogin', 'lastGames'])
+        && request.resource.data.roles == ['player']
+        && request.resource.data.played == 0
+        && request.resource.data.won == 0
+        && validNickname(request.resource.data.nickname)
+        && validImage(request.resource.data.image)
+      );
+
+      allow update: if isAdmin() || (
+        signedIn() && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nickname', 'image'])
+        && validNickname(request.resource.data.nickname)
+        && validImage(request.resource.data.image)
+      );
+
       allow delete: if false;
     }
 
+    // ---------- Partidos ----------
     match /matches/{matchId} {
+
+      function subscriberAfter(playerId) {
+        return getAfter(/databases/$(database)/documents/matches/$(matchId)/subscribers/$(playerId));
+      }
+
+      function subscriberExistsAfter(playerId) {
+        return existsAfter(/databases/$(database)/documents/matches/$(matchId)/subscribers/$(playerId));
+      }
+
+      function subscriberBefore(playerId) {
+        return get(/databases/$(database)/documents/matches/$(matchId)/subscribers/$(playerId));
+      }
+
+      // Lo único que cambia es la lista de anotados, y el partido sigue abierto.
+      function onlyPlayersListChanges() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playersList'])
+          && resource.data.enabled == true;
+      }
+
+      // Anotarse (o anotar a un amigo): se agrega un solo jugador, sin pasarse del cupo,
+      // y en la misma escritura se crea su documento de anotado.
+      function isJoin() {
+        let before = resource.data.playersList;
+        let after = request.resource.data.playersList;
+        let added = after.removeAll(before);
+        return after.size() == before.size() + 1
+          && after.hasAll(before)
+          && added.size() == 1
+          && after.size() <= resource.data.maxPlayers
+          && subscriberExistsAfter(added[0]);
+      }
+
+      // Bajarse (o bajar a un amigo que anotó uno): se saca un solo jugador
+      // y en la misma escritura se borra su documento de anotado.
+      function isLeave() {
+        let before = resource.data.playersList;
+        let after = request.resource.data.playersList;
+        let removed = before.removeAll(after);
+        return after.size() == before.size() - 1
+          && before.hasAll(after)
+          && removed.size() == 1
+          && !subscriberExistsAfter(removed[0])
+          && (removed[0] == request.auth.uid || subscriberBefore(removed[0]).data.friendOf == request.auth.uid);
+      }
+
       allow read: if signedIn();
       allow create, delete: if isAdmin();
-      // Cualquiera puede anotarse / bajarse (lista de jugadores); el resto solo los admins.
-      allow update: if isAdmin()
-        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playersList']));
+      allow update: if isAdmin() || (signedIn() && onlyPlayersListChanges() && (isJoin() || isLeave()));
 
       match /subscribers/{playerId} {
+
+        function matchAfter() {
+          return getAfter(/databases/$(database)/documents/matches/$(matchId)).data;
+        }
+
+        function matchBefore() {
+          return get(/databases/$(database)/documents/matches/$(matchId)).data;
+        }
+
+        function userPath() {
+          return /databases/$(database)/documents/users/$(playerId);
+        }
+
+        // Las estadísticas del anotado son las del jugador (o 0 para un amigo nuevo): no se pueden inventar.
+        function realStats() {
+          let data = request.resource.data;
+          return (exists(userPath())
+              && data.played == get(userPath()).data.played && data.won == get(userPath()).data.won)
+            || (!exists(userPath()) && data.played == 0 && data.won == 0);
+        }
+
+        function validSubscriber() {
+          let data = request.resource.data;
+          return data.keys().hasOnly(['nickname', 'image', 'played', 'won', 'friendOf', 'lastGames'])
+            && validNickname(data.nickname)
+            && (
+              (playerId == request.auth.uid && data.friendOf == '')
+              || (playerId != request.auth.uid && data.friendOf == request.auth.uid)
+            )
+            && realStats();
+        }
+
         allow read: if signedIn();
-        allow create: if signedIn();
-        allow delete: if signedIn() && (
-          playerId == request.auth.uid || resource.data.friendOf == request.auth.uid || isAdmin());
+
+        // Se crea junto con el alta en `playersList` (ahí se controla el cupo).
+        allow create: if isAdmin() || (
+          signedIn()
+          && matchBefore().enabled == true
+          && matchAfter().playersList.hasAny([playerId])
+          && validSubscriber()
+        );
+
+        allow delete: if isAdmin() || (
+          signedIn()
+          && (playerId == request.auth.uid || resource.data.friendOf == request.auth.uid)
+          && matchBefore().enabled == true
+          && !matchAfter().playersList.hasAny([playerId])
+        );
+
         allow update: if isAdmin();
       }
 
+      // Equipos: los arman los admins.
       match /{team}/{playerId} {
         allow read: if signedIn() && (team == 'teamWhite' || team == 'teamBlack');
         allow write: if isAdmin() && (team == 'teamWhite' || team == 'teamBlack');
       }
     }
+
+    // ---------- Novedades ----------
 
     // Novedades del dashboard.
     match /card-news/{newsId} {

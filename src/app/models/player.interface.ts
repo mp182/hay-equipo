@@ -1,6 +1,7 @@
 export interface Player {
     id: string;
-    email: string;
+    /** Solo el del jugador logueado (sale de su cuenta de Google, no se guarda en Firestore). */
+    email?: string;
     googleLogin: boolean;
     image: string;
     lastGames: string[];
