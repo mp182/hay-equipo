@@ -1,5 +1,5 @@
 import {
-  ApplicationConfig, LOCALE_ID, inject, isDevMode, provideAppInitializer, provideZoneChangeDetection
+  ApplicationConfig, LOCALE_ID, inject, isDevMode, provideAppInitializer, provideZonelessChangeDetection
 } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeEsAr from '@angular/common/locales/es-AR';
@@ -19,7 +19,7 @@ registerLocaleData(localeEsAr, 'es-AR');
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideZonelessChangeDetection(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: LOCALE_ID, useValue: 'es-AR' },
     // useSetInputAPI: los componentProps de los modales se pasan como inputs (soporta signal inputs).

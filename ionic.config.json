@@ -1,7 +1,5 @@
 {
   "name": "HayEquipoApp",
-  "integrations": {
-    "capacitor": {}
-  },
+  "integrations": {},
   "type": "angular-standalone"
 }

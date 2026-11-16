@@ -1,11 +1,11 @@
 # Hay Equipo! ⚽
 
-This project was generated with [Ionic CLI](https://ionicframework.com/docs/cli).
+App para organizar los partidos de fútbol con amigos: anotarse, armar equipos parejos según las estadísticas y seguir el ranking. Es una PWA (se instala desde el navegador).
 
-## Technology Stack 👨‍💻
-- [Ionic](https://ionicframework.com/)
-- [Angular](https://angular.io/)
-- [Firebase](https://firebase.google.com/)
+## Tecnologías 👨‍💻
+- [Angular](https://angular.dev/) 21 (standalone, signals y sin zone.js)
+- [Ionic](https://ionicframework.com/) 9
+- [Firebase](https://firebase.google.com/) 12 con AngularFire 21 (Auth y Firestore)
 
 ## Desarrollo 🛠️
 
@@ -40,8 +40,6 @@ En Windows el emulador de Hosting no aplica los `headers` de `firebase.json` (un
 
 Los que tienen la app abierta reciben el aviso "Hay una versión nueva" (se busca al volver a la app y cada 30 minutos) y con "Actualizar" pasan a la nueva; si no, la nueva se abre sola la próxima vez. Después de actualizar, ven las novedades una sola vez.
 
-Stack: Angular 21 (standalone + signals), Ionic 9, AngularFire 21 / Firebase 12, Capacitor 8.
-
 ### Firebase
 
 El proyecto usa `hay-equipo-v2` (ver `.firebaserc` y `src/environments`). Las reglas de seguridad están en el repo:
@@ -60,11 +58,11 @@ firebase deploy --only firestore:rules
 - **Tipografía:** Bricolage Grotesque 800 para el nombre y títulos de marca; Exo 2 para el resto de la app.
 - **Íconos:** `branding/app-icon.svg` es la fuente de los PNG de `src/assets/icons` (íconos de la PWA, con margen para la versión "maskable") y `src/assets/img/favicon.svg` la del favicon.
 
-## Contact 📧
+## Sobre la app 📱
 
-If you want to contact me you can reach me at <mpablo182@gmail.com>.
+La hice para usar con mis amigos en los partidos que jugamos los sábados. Permite anotarse al partido, seguir las estadísticas y armar los equipos según esas estadísticas para que el partido sea parejo.
+Si la querés usar con tus amigos, escribime: te ayudo con gusto.
 
-## About the app 📱
+## Contacto 📧
 
-I created this app to use with my friends for the soccer matches we play on Saturdays. It lets you subscribe to the match, follow statistics, and build the teams based on the statistics to make the match fair.
-If you want to use it with your friends please contact me! I'll very glad of helping you.
+Me podés escribir a <mpablo182@gmail.com>.
