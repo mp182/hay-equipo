@@ -8,6 +8,7 @@ import { teamsOutOfDate } from './teams.helpers';
 describe('playerScore', () => {
   it('vale 50 con menos de 10 partidos jugados', () => {
     expect(playerScore({ played: 9, won: 9 })).toBe(50);
+    expect(playerScore({ played: 10, won: 4 })).toBe(40);
   });
 
   it('es el porcentaje de ganados con 10 o más partidos', () => {

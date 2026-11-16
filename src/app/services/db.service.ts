@@ -9,6 +9,7 @@ import { Match } from '../models/match.interface';
 import { News } from '../models/news.interface';
 import { Player } from '../models/player.interface';
 import { AuthenticationService, DEFAULT_AVATAR } from './authentication.service';
+import { MIN_GAMES_FOR_RANKING } from '../helpers/score.helpers';
 import { titleCase } from '../helpers/string.helpers';
 import { teamsOutOfDate } from '../helpers/teams.helpers';
 
@@ -261,10 +262,10 @@ export class DbService {
     return this.run(() => updateDoc(doc(this.firestore, `users/${playerId}`), { nickname }));
   }
 
-  /** Jugadores que entran en el ranking (más de 10 partidos jugados). */
+  /** Jugadores que entran en el ranking: los que ya tienen promedio propio (ver `playerScore`). */
   getPlayers(): Observable<Player[]> {
     return this.run(() => collectionData(
-      query(collection(this.firestore, 'users'), where('played', '>', 10)), { idField: 'id' }
+      query(collection(this.firestore, 'users'), where('played', '>=', MIN_GAMES_FOR_RANKING)), { idField: 'id' }
     )) as Observable<Player[]>;
   }
 

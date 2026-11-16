@@ -22,7 +22,7 @@ export class RankingPage {
 
   private readonly rankingTabsService = inject(RankingTabsService);
 
-  /** Mejor promedio primero (solo jugadores con más de 10 partidos). */
+  /** Mejor promedio primero (solo jugadores con 10 partidos o más). */
   readonly players = computed(() => [...this.rankingTabsService.players()].sort((a, b) => {
     const scoreA = a.won === 0 ? 0 : (a.won / a.played) * 100;
     const scoreB = b.won === 0 ? 0 : (b.won / b.played) * 100;
