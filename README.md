@@ -26,6 +26,20 @@ Para probar sin tocar la base real (proyecto `demo-hay-equipo`, solo en tu máqu
 
 Los datos del emulador se borran al cerrarlo.
 
+### Probar el build de producción
+
+`npm run build` y después `npx firebase emulators:start --only hosting --project demo-hay-equipo` sirven `www/` en http://localhost:5000 con el service worker activo (en el desarrollo normal no hay service worker). Ojo: el build de producción usa la base real `hay-equipo-v2`.
+
+En Windows el emulador de Hosting no aplica los `headers` de `firebase.json` (un bug de la herramienta con las barras de las rutas); en Firebase Hosting sí se aplican.
+
+## Sacar una versión nueva 🚀
+
+1. `npm version minor --no-git-tag-version` (o `patch` / `major`): la versión sale solo de `package.json`.
+2. Agregar sus novedades al principio de `src/app/changelog.ts`, contadas para los jugadores (`npm test` falla si faltan).
+3. `npm run build` y `firebase deploy --only hosting` (y `firestore:rules` si cambiaron las reglas).
+
+Los que tienen la app abierta reciben el aviso "Hay una versión nueva" (se busca al volver a la app y cada 30 minutos) y con "Actualizar" pasan a la nueva; si no, la nueva se abre sola la próxima vez. Después de actualizar, ven las novedades una sola vez.
+
 Stack: Angular 21 (standalone + signals), Ionic 9, AngularFire 21 / Firebase 12, Capacitor 8.
 
 ### Firebase
@@ -37,7 +51,6 @@ firebase deploy --only firestore:rules
 ```
 
 - Los roles (`admin`, `superadmin`) se asignan a mano en el campo `roles` del documento `users/{uid}`.
-- Para el aviso de "nueva versión", cargar un documento en la colección `version` con el campo `version` (y las novedades en `news`).
 - El proyecto está en el plan gratuito (Spark): no usa Storage ni Cloud Functions. Los avatares son la foto de Google o el avatar por defecto.
 
 ## Marca 🎨
