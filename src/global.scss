@@ -173,3 +173,98 @@ ion-card {
   }
 }
 
+
+/* Pantallas simples y formularios ------------------------------------ */
+
+.page-body {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 16px calc(env(safe-area-inset-bottom) + 24px);
+}
+
+.page-intro {
+  margin: 0 0 20px;
+  color: var(--ion-color-step-700);
+  font-size: 15px;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Fila con borde, para controles que no son un input (ej. fecha y hora) */
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 12px 0 16px;
+  border: 1px solid var(--ion-color-step-300);
+  border-radius: 4px;
+  color: var(--ion-color-step-700);
+
+  > span {
+    white-space: nowrap;
+  }
+}
+
+.form-hint {
+  margin: -8px 4px 0;
+  font-size: 13px;
+  color: var(--ion-color-step-600);
+}
+
+/* Botón principal grande (Anotarme, Guardar, Crear partido…) */
+.big-button {
+  --border-radius: 14px;
+  height: 50px;
+  margin: 8px 0 0;
+  font-family: var(--brand-font);
+  font-weight: 800;
+  font-size: 17px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Barra de acciones fija abajo (partido, anotar amigo, cambiar equipos) */
+.actions-footer {
+  background: var(--ion-background-color);
+  box-shadow: 0 -1px 0 var(--ion-border-color);
+}
+
+.actions {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 10px 16px calc(env(safe-area-inset-bottom) + 10px);
+
+  .big-button {
+    margin: 0 0 4px;
+  }
+}
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 8px;
+
+  &:empty {
+    display: none;
+  }
+
+  ion-button {
+    flex: 1 1 auto;
+    margin: 0;
+  }
+}
+
+/* Lista con borde redondeado */
+.rounded-list {
+  padding: 0;
+  border: 1px solid var(--ion-border-color);
+  border-radius: 16px;
+  overflow: hidden;
+}

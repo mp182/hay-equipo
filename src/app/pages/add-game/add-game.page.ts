@@ -2,8 +2,8 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput, IonItem,
-  IonLabel, IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar
+  IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput,
+  IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar
 } from '@ionic/angular';
 
 import { DbService } from 'src/app/services/db.service';
@@ -17,8 +17,8 @@ import { nextSaturday, toLocalIsoString } from '../../helpers/date.helpers';
   styleUrls: ['./add-game.page.scss'],
   imports: [
     ReactiveFormsModule,
-    IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput, IonItem,
-    IonLabel, IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar
+    IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput,
+    IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar
   ],
 })
 export class AddGamePage {

@@ -9,17 +9,17 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <form class="form" [formGroup]="newFriendForm" (ngSubmit)="saveFriend()">
+<ion-content>
+  <form class="page-body form-stack" [formGroup]="newFriendForm" (ngSubmit)="saveFriend()">
 
-      <ion-item>
-          <ion-input label="Nombre | Apodo" labelPlacement="floating" color="primary" type="text"
-              formControlName="nickname"></ion-input>
-      </ion-item>
+    <p class="page-intro">Para un amigo que no usa la app. Queda anotado en este partido.</p>
 
-      <ion-button type="submit" [disabled]="newFriendForm.invalid" expand="block" class="ion-margin-vertical">
-          OK
-      </ion-button>
+    <ion-input label="Nombre o apodo" labelPlacement="floating" fill="outline" type="text"
+      formControlName="nickname"></ion-input>
+
+    <ion-button class="big-button" type="submit" [disabled]="newFriendForm.invalid" expand="block">
+      Anotarlo
+    </ion-button>
 
   </form>
 </ion-content>

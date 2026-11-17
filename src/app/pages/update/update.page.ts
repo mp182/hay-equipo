@@ -1,7 +1,6 @@
 import { Component, inject, input } from '@angular/core';
 import {
-  IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
-  IonItem, IonList, IonTitle, IonToolbar, ModalController
+  IonButton, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar, ModalController
 } from '@ionic/angular';
 
 import { ChangelogEntry } from 'src/app/changelog';
@@ -12,8 +11,7 @@ import { ChangelogEntry } from 'src/app/changelog';
   templateUrl: './update.page.html',
   styleUrls: ['./update.page.scss'],
   imports: [
-    IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
-    IonItem, IonList, IonTitle, IonToolbar
+    IonButton, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar
   ],
 })
 export class UpdatePage {

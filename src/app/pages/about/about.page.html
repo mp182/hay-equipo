@@ -3,53 +3,36 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="dashboard"></ion-back-button>
     </ion-buttons>
-    <ion-title>Info de la App</ion-title>
+    <ion-title>Info de la app</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-grid fixed>
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="people"></ion-icon>
-          ¿Quién la hizo?
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-item lines="none">
-          <ion-avatar slot="start">
-            <img src="assets/img/about-1.jpg" appSafeImage alt="Pablo">
-          </ion-avatar>
-          <ion-label>
-            <h1>Pablo 👨‍💻</h1>
-            <h2>Desarrollador de Software</h2>
-            <ion-button size="small">
-              <a href="https://www.linkedin.com/in/pablo-mancinelli/" target="_blank">
-                <strong>LinkedIn</strong>
-              </a>
-            </ion-button>
-            <ion-button size="small" color="light">
-              <a href="https://github.com/mp182" target="_blank">
-                <strong>GitHub</strong>
-              </a>
-            </ion-button>
-          </ion-label>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="information-circle-outline"></ion-icon>
-          Info
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>
-          Versión: {{ version }}
-        </p>
-      </ion-card-content>
-    </ion-card>
-  </ion-grid>
+  <div class="page-body">
+    <section class="app-card">
+      <app-logo-mark class="app-logo" />
+      <h1 class="app-name">Hay Equipo!</h1>
+      <p class="app-tagline">Organizá el fulbito con tus amigos</p>
+      <p class="app-version">Versión {{ version }}</p>
+    </section>
+
+    <h2 class="section-title">¿Quién la hizo?</h2>
+    <section class="author">
+      <ion-avatar class="author-avatar">
+        <img src="assets/img/about-1.jpg" appSafeImage alt="">
+      </ion-avatar>
+      <div class="author-info">
+        <strong>Pablo</strong>
+        <span>Desarrollador de software</span>
+        <div class="author-links">
+          <ion-button size="small" fill="outline" href="https://www.linkedin.com/in/pablo-mancinelli/" target="_blank">
+            LinkedIn
+          </ion-button>
+          <ion-button size="small" fill="outline" href="https://github.com/mp182" target="_blank">
+            GitHub
+          </ion-button>
+        </div>
+      </div>
+    </section>
+  </div>
 </ion-content>

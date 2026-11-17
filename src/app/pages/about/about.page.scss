@@ -1,14 +1,80 @@
-ion-button {
-    a {
-        color: white;
-        text-decoration: none;
+.app-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 20px 24px;
+    border-radius: 20px;
+    background: var(--brand-green);
+    color: #ffffff;
+    text-align: center;
+}
+
+.app-logo {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 12px;
+}
+
+.app-name {
+    margin: 0;
+    font-family: var(--brand-font);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1;
+}
+
+.app-tagline {
+    margin: 8px 0 0;
+    color: var(--brand-mint);
+}
+
+.app-version {
+    margin: 14px 0 0;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.25);
+    font-size: 13px;
+}
+
+.author {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--ion-border-color);
+    border-radius: 16px;
+    background: var(--ion-card-background);
+}
+
+.author-avatar {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+        font-family: var(--brand-font);
+        font-size: 20px;
+    }
+
+    span {
+        color: var(--ion-color-step-650);
+        font-size: 14px;
     }
 }
 
-ion-card-title {
-    align-items: center;
+.author-links {
     display: flex;
-    ion-icon {
-        margin-right: 8px;
+    gap: 8px;
+    margin-top: 8px;
+
+    ion-button {
+        margin: 0;
+        text-transform: none;
     }
 }

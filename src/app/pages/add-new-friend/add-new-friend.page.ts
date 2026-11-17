@@ -1,7 +1,7 @@
 import { Component, inject, input } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
-  IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonTitle, IonToolbar, ModalController,
+  IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonTitle, IonToolbar, ModalController,
   NavController
 } from '@ionic/angular';
 
@@ -17,7 +17,7 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./add-new-friend.page.scss'],
   imports: [
     ReactiveFormsModule,
-    IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonTitle, IonToolbar
+    IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonTitle, IonToolbar
   ],
 })
 export class AddNewFriendPage {

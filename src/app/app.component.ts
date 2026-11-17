@@ -3,8 +3,8 @@ import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import {
-  IonApp, IonAvatar, IonChip, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu,
-  IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar, MenuController, ToastController
+  AlertController, IonApp, IonAvatar, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu,
+  IonRouterOutlet, IonSplitPane, MenuController, ToastController
 } from '@ionic/angular';
 import { combineLatest, distinctUntilChanged, filter, map, of, share, startWith, switchMap, timer } from 'rxjs';
 
@@ -25,12 +25,13 @@ const STALE_NOTICE_DELAY = 5000;
   styleUrls: ['app.component.scss'],
   imports: [
     AsyncPipe, RouterLink, SafeImageDirective, LogoMarkComponent,
-    IonApp, IonAvatar, IonChip, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu,
-    IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar
+    IonApp, IonAvatar, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu,
+    IonRouterOutlet, IonSplitPane
   ],
 })
 export class AppComponent {
 
+  private readonly alertController = inject(AlertController);
   private readonly authService = inject(AuthenticationService);
   private readonly menuCtrl = inject(MenuController);
   private readonly router = inject(Router);
@@ -137,6 +138,18 @@ export class AppComponent {
     if (!this.staleNoticeWanted) {
       await this.toggleStaleNotice(false);
     }
+  }
+
+  async confirmLogout() {
+    const alert = await this.alertController.create({
+      header: 'Cerrar sesión',
+      message: '¿Seguro que querés salir?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Salir', role: 'destructive', handler: () => { this.logout(); } }
+      ]
+    });
+    await alert.present();
   }
 
   async logout() {

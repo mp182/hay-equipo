@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { AbstractControl, FormControl, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar
 } from '@ionic/angular';
 
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -21,7 +21,7 @@ function noWhitespaceValidator(control: AbstractControl<string>): ValidationErro
   styleUrls: ['./change-nickname.page.scss'],
   imports: [
     ReactiveFormsModule,
-    IonBackButton, IonButton, IonButtons, IonContent, IonGrid, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar
   ],
 })
 export class ChangeNicknamePage {

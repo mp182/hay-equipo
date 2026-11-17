@@ -3,17 +3,17 @@
         <ion-buttons slot="start">
             <ion-back-button defaultHref="dashboard"></ion-back-button>
         </ion-buttons>
-        <ion-title>Agregar Partido</ion-title>
+        <ion-title>Nuevo partido</ion-title>
     </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-    <form class="form" [formGroup]="matchForm" (ngSubmit)="addMatch()">
+<ion-content>
+    <form class="page-body form-stack" [formGroup]="matchForm" (ngSubmit)="addMatch()">
 
-        <ion-item>
-            <ion-label color="primary">Fecha y hora</ion-label>
-            <ion-datetime-button datetime="match-date" slot="end"></ion-datetime-button>
-        </ion-item>
+        <div class="field-row">
+            <span>Fecha y hora</span>
+            <ion-datetime-button datetime="match-date"></ion-datetime-button>
+        </div>
 
         <ion-modal [keepContentsMounted]="true">
             <ng-template>
@@ -23,22 +23,18 @@
             </ng-template>
         </ion-modal>
 
-        <ion-item>
-            <ion-select label="Cantidad de Jugadores" labelPlacement="floating" color="primary"
-                formControlName="maxPlayers" interface="action-sheet" cancelText="Cancelar"
-                [interfaceOptions]="maxPlayerOptions">
-                <ion-select-option [value]="12">12</ion-select-option>
-                <ion-select-option [value]="10">10</ion-select-option>
-            </ion-select>
-        </ion-item>
+        <ion-select label="Cantidad de jugadores" labelPlacement="floating" fill="outline"
+            formControlName="maxPlayers" interface="action-sheet" cancelText="Cancelar"
+            [interfaceOptions]="maxPlayerOptions">
+            <ion-select-option [value]="12">12 (6 contra 6)</ion-select-option>
+            <ion-select-option [value]="10">10 (5 contra 5)</ion-select-option>
+        </ion-select>
 
-        <ion-item>
-            <ion-input label="Lugar" labelPlacement="floating" color="primary" type="text"
-                formControlName="location"></ion-input>
-        </ion-item>
+        <ion-input label="Lugar" labelPlacement="floating" fill="outline" type="text"
+            formControlName="location"></ion-input>
 
-        <ion-button class="ion-margin-vertical" type="submit" expand="block" [disabled]="matchForm.invalid">
-            Agregar
+        <ion-button class="big-button" type="submit" expand="block" [disabled]="matchForm.invalid">
+            Crear partido
         </ion-button>
 
     </form>

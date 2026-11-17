@@ -5,29 +5,24 @@
 </ion-header>
 
 <ion-content>
-
-    @for (entry of entries(); track entry.version) {
-        <ion-card>
-            <ion-card-header>
-                <ion-card-subtitle>Versión {{ entry.version }}</ion-card-subtitle>
-                <ion-card-title>✨ Qué hay de nuevo</ion-card-title>
-            </ion-card-header>
-
-            <ion-card-content>
-                <ion-list>
+    <div class="page-body">
+        @for (entry of entries(); track entry.version) {
+            <section class="release">
+                <p class="release-version">Versión {{ entry.version }}</p>
+                <h2 class="release-title">Qué hay de nuevo</h2>
+                <ul class="release-changes">
                     @for (change of entry.changes; track $index) {
-                        <ion-item class="ion-margin-vertical ion-text-justify" lines="none">
-                            <ion-icon name="football" slot="start"></ion-icon>
-                            <p>{{ change }}</p>
-                        </ion-item>
+                        <li>
+                            <ion-icon name="football" aria-hidden="true"></ion-icon>
+                            <span>{{ change }}</span>
+                        </li>
                     }
-                </ion-list>
-            </ion-card-content>
-        </ion-card>
-    }
+                </ul>
+            </section>
+        }
 
-    <ion-button class="ion-padding" expand="block" (click)="close()">
-        Dale!
-    </ion-button>
-
+        <ion-button class="big-button" expand="block" (click)="close()">
+            Dale!
+        </ion-button>
+    </div>
 </ion-content>

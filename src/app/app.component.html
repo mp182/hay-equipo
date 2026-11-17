@@ -2,44 +2,36 @@
     <ion-split-pane when="sm" contentId="main">
         <ion-menu side="start" contentId="main">
             @if (user$ | async; as user) {
-                <ion-header>
-                    <ion-toolbar class="customToolbar">
-                        <ion-avatar class="ion-margin">
-                            <img [src]="user.image" appSafeImage alt="Avatar">
+                <ion-header class="menu-header">
+                    <div class="menu-profile">
+                        <ion-avatar class="menu-avatar">
+                            <img [src]="user.image || 'assets/img/playerAvatar.png'" appSafeImage alt="">
                         </ion-avatar>
-                        <ion-title>
-                            <ion-chip class="chipToolbar">
-                                <ion-label>{{ user.nickname }}</ion-label>
-                            </ion-chip>
-                        </ion-title>
-                        <ion-title size="small" class="chipToolbar ion-margin-bottom">
-                            <ion-chip class="chipToolbar">
-                                <ion-label>{{ user.email }}</ion-label>
-                            </ion-chip>
-                        </ion-title>
-                    </ion-toolbar>
+                        <div class="menu-user">
+                            <span class="menu-nickname">{{ user.nickname }}</span>
+                            <span class="menu-email">{{ user.email }}</span>
+                        </div>
+                    </div>
                 </ion-header>
             }
-            <ion-content>
-                <ion-list>
-                    <ion-item lines="none" button (click)="editNickname()">
-                        <ion-icon name="create" slot="start"></ion-icon>
-                        Cambiar Apodo
+            <ion-content class="menu-content">
+                <ion-list lines="none" class="menu-list">
+                    <ion-item button (click)="editNickname()">
+                        <ion-icon name="create-outline" slot="start" aria-hidden="true"></ion-icon>
+                        <ion-label>Cambiar apodo</ion-label>
                     </ion-item>
-                    <ion-item lines="none" button [routerLink]="['/about']">
-                        <ion-icon name="information-circle-outline" slot="start"></ion-icon>
-                        Info de la App
+                    <ion-item button [routerLink]="['/about']">
+                        <ion-icon name="information-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+                        <ion-label>Info de la app</ion-label>
                     </ion-item>
                 </ion-list>
             </ion-content>
 
-            <ion-footer (click)="logout()">
-                <ion-toolbar color="danger">
-                    <ion-title>Cerrar Sesión</ion-title>
-                    <ion-item color="danger" slot="secondary" lines="none">
-                        <ion-icon name="log-out"></ion-icon>
-                    </ion-item>
-                </ion-toolbar>
+            <ion-footer class="menu-footer">
+                <ion-item button lines="none" class="logout-item" (click)="confirmLogout()">
+                    <ion-icon name="log-out-outline" slot="start" aria-hidden="true"></ion-icon>
+                    <ion-label>Cerrar sesión</ion-label>
+                </ion-item>
             </ion-footer>
         </ion-menu>
         <ion-router-outlet id="main"></ion-router-outlet>

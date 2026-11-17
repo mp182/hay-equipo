@@ -1,0 +1,43 @@
+.release {
+    margin-bottom: 20px;
+    padding: 18px;
+    border: 1px solid var(--ion-border-color);
+    border-radius: 16px;
+    background: var(--ion-card-background);
+}
+
+.release-version {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-mint);
+}
+
+.release-title {
+    margin: 2px 0 12px;
+    font-family: var(--brand-font);
+    font-weight: 800;
+    font-size: 22px;
+}
+
+.release-changes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: flex;
+        gap: 10px;
+    }
+
+    ion-icon {
+        flex-shrink: 0;
+        margin-top: 3px;
+        color: var(--ion-color-success);
+    }
+}

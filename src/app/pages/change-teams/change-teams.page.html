@@ -3,31 +3,39 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="dashboard"></ion-back-button>
     </ion-buttons>
-    <ion-title>Cambiar Equipos</ion-title>
+    <ion-title>Cambiar equipos</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-reorder-group (ionReorderEnd)="doReorder($event)" [disabled]="false">
-    @for (item of reorderItems(); track item.id) {
-      <ion-item>
-        @if (item.flag) {
-          <ion-label class="ion-text-center team-flag">
-            <strong>{{ item.nickname }}</strong>
-          </ion-label>
-        } @else {
-          <ion-label>{{ item.nickname }}</ion-label>
-          <ion-reorder slot="end"></ion-reorder>
+  <div class="page-body">
+    <p class="page-intro">Arrastrá a los jugadores desde el ícono de la derecha para pasarlos de un equipo al otro.</p>
+
+    <ion-list class="rounded-list" lines="full">
+      <ion-reorder-group (ionReorderEnd)="doReorder($event)" [disabled]="false">
+        @for (item of reorderItems(); track item.id) {
+          @if (item.flag) {
+            <ion-item class="team-flag" [class.shirt-white]="item.id === '__white'" [class.shirt-black]="item.id === '__black'">
+              <ion-label>{{ item.nickname }}</ion-label>
+            </ion-item>
+          } @else {
+            <ion-item>
+              <ion-label>{{ item.nickname }}</ion-label>
+              <ion-reorder slot="end"></ion-reorder>
+            </ion-item>
+          }
         }
-      </ion-item>
-    }
-  </ion-reorder-group>
+      </ion-reorder-group>
+    </ion-list>
+  </div>
 </ion-content>
 
 @if (canSave()) {
-  <ion-footer>
-    <ion-toolbar color="warning" mode="ios" (click)="changeTeams()">
-      <ion-title>Guardar</ion-title>
-    </ion-toolbar>
+  <ion-footer class="actions-footer">
+    <div class="actions">
+      <ion-button class="big-button" expand="block" (click)="changeTeams()">
+        Guardar cambios
+      </ion-button>
+    </div>
   </ion-footer>
 }

@@ -11,33 +11,41 @@
 </ion-header>
 
 <ion-content>
+  <div class="page-body">
+    <p class="page-intro">Elegí a quién anotar en este partido.</p>
 
-  <ion-searchbar placeholder="Buscar..." [animated]="true" (ionInput)="filterList($event)"></ion-searchbar>
+    <ion-searchbar placeholder="Buscar por apodo" [animated]="true" (ionInput)="filterList($event)"></ion-searchbar>
 
-  @if (filteredList().length > 0) {
-    <ion-list>
-      @for (player of filteredList(); track player.id) {
-        <ion-item button (click)="addFriendAlert(player)">
-          <ion-avatar slot="start">
-            <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="Avatar">
-          </ion-avatar>
-          <h6>{{ player.nickname }}</h6>
-          <div class="flex-container" slot="end">
-            <ion-badge color="primary" class="ion-margin-end">{{ player.played }}</ion-badge>
-            <ion-badge color="success" class="ion-margin-end">{{ player.won }}</ion-badge>
-            <h5>
+    @if (filteredList().length > 0) {
+      <ion-list class="rounded-list" lines="full">
+        @for (player of filteredList(); track player.id) {
+          <ion-item button (click)="addFriendAlert(player)">
+            <ion-avatar slot="start">
+              <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="">
+            </ion-avatar>
+            <ion-label>
+              {{ player.nickname }}
+              <p>{{ player.played }} jugados · {{ player.won }} ganados</p>
+            </ion-label>
+            <span slot="end" class="stat-number friend-score">
               <app-score [player]="player"></app-score>
-            </h5>
-          </div>
-        </ion-item>
-      }
-    </ion-list>
-  }
-
+            </span>
+          </ion-item>
+        }
+      </ion-list>
+    } @else {
+      <div class="empty-state">
+        <p>No hay nadie con ese apodo.<br>Si no usa la app, agregalo como nuevo.</p>
+      </div>
+    }
+  </div>
 </ion-content>
 
-<ion-footer>
-  <ion-toolbar color="secondary" (click)="addNewFriend()">
-    <ion-title>Nuevo amigo ✨</ion-title>
-  </ion-toolbar>
+<ion-footer class="actions-footer">
+  <div class="actions">
+    <ion-button expand="block" fill="outline" (click)="addNewFriend()">
+      <ion-icon name="person-add" slot="start" aria-hidden="true"></ion-icon>
+      Agregar a alguien nuevo
+    </ion-button>
+  </div>
 </ion-footer>

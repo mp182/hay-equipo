@@ -3,18 +3,17 @@
         <ion-buttons slot="start">
             <ion-back-button defaultHref="dashboard"></ion-back-button>
         </ion-buttons>
-        <ion-title>Cambiar Apodo</ion-title>
+        <ion-title>Cambiar apodo</ion-title>
     </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-    <ion-grid fixed>
-        <ion-item>
-            <ion-input label="Nuevo Apodo" labelPlacement="floating" type="text" [formControl]="nickname"></ion-input>
-        </ion-item>
-        <ion-button [disabled]="nickname.invalid" expand="block" class="ion-margin-vertical"
-            (click)="updateNickname()">
-            OK
+<ion-content>
+    <form class="page-body form-stack" (submit)="$event.preventDefault(); nickname.valid && updateNickname()">
+        <ion-input label="Nuevo apodo" labelPlacement="floating" fill="outline" type="text"
+            [formControl]="nickname"></ion-input>
+        <p class="form-hint">Es el nombre que ven todos en los partidos y el ranking. Mínimo 3 letras.</p>
+        <ion-button class="big-button" type="submit" expand="block" [disabled]="nickname.invalid">
+            Guardar
         </ion-button>
-    </ion-grid>
+    </form>
 </ion-content>

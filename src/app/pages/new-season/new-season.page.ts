@@ -3,8 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import {
-  IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle,
-  IonContent, IonHeader, IonTitle, IonToolbar
+  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar
 } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
@@ -16,8 +15,7 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./new-season.page.scss'],
   imports: [
     DatePipe,
-    IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle,
-    IonContent, IonHeader, IonTitle, IonToolbar
+    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar
   ],
 })
 export class NewSeasonPage {

@@ -2,8 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  AlertController, IonAvatar, IonBackButton, IonBadge, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonList,
-  IonMenuButton, IonSearchbar, IonTitle, IonToolbar, ModalController, SearchbarCustomEvent
+  AlertController, IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonItem,
+  IonLabel, IonList, IonMenuButton, IonSearchbar, IonTitle, IonToolbar, ModalController, SearchbarCustomEvent
 } from '@ionic/angular';
 import { combineLatest, map } from 'rxjs';
 
@@ -21,8 +21,8 @@ import { AddNewFriendPage } from '../add-new-friend/add-new-friend.page';
   styleUrls: ['./add-friend.page.scss'],
   imports: [
     SafeImageDirective, ScoreComponent,
-    IonAvatar, IonBackButton, IonBadge, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonList, IonMenuButton,
-    IonSearchbar, IonTitle, IonToolbar
+    IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel,
+    IonList, IonMenuButton, IonSearchbar, IonTitle, IonToolbar
   ],
 })
 export class AddFriendPage {

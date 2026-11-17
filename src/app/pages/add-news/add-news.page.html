@@ -3,21 +3,21 @@
       <ion-buttons slot="start">
           <ion-back-button defaultHref="dashboard"></ion-back-button>
       </ion-buttons>
-      <ion-title>Agregar Novedad</ion-title>
+      <ion-title>Nueva info</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <form class="form" [formGroup]="newsForm" (ngSubmit)="addNews()">
+<ion-content>
+  <form class="page-body form-stack" [formGroup]="newsForm" (ngSubmit)="addNews()">
 
-      <ion-item>
-          <ion-input label="Descripción" labelPlacement="floating" color="primary" type="text"
-              formControlName="description"></ion-input>
-      </ion-item>
+    <p class="page-intro">Aparece en la tarjeta de Novedades del inicio, para todos.</p>
 
-      <ion-button class="ion-margin-vertical" type="submit" expand="block" [disabled]="newsForm.invalid">
-          Agregar
-      </ion-button>
+    <ion-input label="Texto" labelPlacement="floating" fill="outline" type="text"
+      formControlName="description"></ion-input>
+
+    <ion-button class="big-button" type="submit" expand="block" [disabled]="newsForm.invalid">
+      Publicar
+    </ion-button>
 
   </form>
 </ion-content>

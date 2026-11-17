@@ -1,4 +1,20 @@
 .team-flag {
-  background-color: var(--ion-color-primary);
-  color: var(--ion-color-primary-contrast);
+  --background: var(--shirt-bg);
+  --color: var(--shirt-fg);
+  --min-height: 40px;
+  font-family: var(--brand-font);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.shirt-white {
+  --shirt-bg: var(--shirt-white);
+  --shirt-fg: var(--shirt-white-contrast);
+}
+
+.shirt-black {
+  --shirt-bg: var(--shirt-black);
+  --shirt-fg: var(--shirt-black-contrast);
 }

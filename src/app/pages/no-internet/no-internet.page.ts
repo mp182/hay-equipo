@@ -1,16 +1,12 @@
 import { Component, inject } from '@angular/core';
-import {
-  IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
-  IonTitle, IonToolbar, MenuController
-} from '@ionic/angular';
+import { IonContent, IonHeader, IonIcon, IonTitle, IonToolbar, MenuController } from '@ionic/angular';
 
 @Component({
   selector: 'app-no-internet',
   templateUrl: './no-internet.page.html',
   styleUrls: ['./no-internet.page.scss'],
   imports: [
-    IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon,
-    IonTitle, IonToolbar
+    IonContent, IonHeader, IonIcon, IonTitle, IonToolbar
   ],
 })
 export class NoInternetPage {

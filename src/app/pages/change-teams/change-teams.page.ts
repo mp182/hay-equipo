@@ -2,8 +2,8 @@ import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonReorder, IonReorderGroup,
-  IonTitle, IonToolbar, ReorderEndCustomEvent
+  IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonReorder,
+  IonReorderGroup, IonTitle, IonToolbar, ReorderEndCustomEvent
 } from '@ionic/angular';
 import { Subscription, combineLatest } from 'rxjs';
 
@@ -15,16 +15,16 @@ import { ToastService } from 'src/app/services/toast.service';
 /** Ítem de la lista reordenable: un jugador o un separador de equipo. */
 type ReorderItem = (Player & { flag?: false }) | { nickname: string; flag: true; id: string };
 
-const WHITE_FLAG: ReorderItem = { id: '__white', nickname: '⚪ Remera Blanca ⚪', flag: true };
-const BLACK_FLAG: ReorderItem = { id: '__black', nickname: '⚫ Remera Negra ⚫', flag: true };
+const WHITE_FLAG: ReorderItem = { id: '__white', nickname: 'Remera blanca', flag: true };
+const BLACK_FLAG: ReorderItem = { id: '__black', nickname: 'Remera negra', flag: true };
 
 @Component({
   selector: 'app-change-teams',
   templateUrl: './change-teams.page.html',
   styleUrls: ['./change-teams.page.scss'],
   imports: [
-    IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonReorder, IonReorderGroup,
-    IonTitle, IonToolbar
+    IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonReorder,
+    IonReorderGroup, IonTitle, IonToolbar
   ],
 })
 export class ChangeTeamsPage implements OnInit {

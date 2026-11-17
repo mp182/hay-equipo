@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar
 } from '@ionic/angular';
 
 import { DbService } from 'src/app/services/db.service';
@@ -15,7 +15,7 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./add-news.page.scss'],
   imports: [
     ReactiveFormsModule,
-    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonTitle, IonToolbar
+    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar
   ],
 })
 export class AddNewsPage {
