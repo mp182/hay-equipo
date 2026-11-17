@@ -3,7 +3,7 @@
         <ion-buttons slot="start">
             <ion-back-button defaultHref="dashboard"></ion-back-button>
         </ion-buttons>
-        <ion-title>Anotados</ion-title>
+        <ion-title>Partido</ion-title>
         <ion-buttons slot="secondary">
             <ion-menu-button [autoHide]="false"></ion-menu-button>
         </ion-buttons>
@@ -12,224 +12,206 @@
 
 @if (player() && match(); as match) {
     <ion-content>
-        <ion-grid fixed>
-            @if (isAdmin()) {
-                <ion-card>
-                    <ion-card-header>
-                        <ion-card-title>
-                            <ion-icon name="settings"></ion-icon>
-                            Administrador
-                        </ion-card-title>
-                    </ion-card-header>
-                    <ion-card-content>
-                        @if (teamsOutdated()) {
-                            <p class="ion-margin">
-                                <ion-icon name="information-circle" color="warning"></ion-icon>
-                                Los equipos ya no coinciden con los anotados.
-                                {{ fullMatch() ? 'Volvé a armarlos.' : 'Cuando se complete el partido, volvé a armarlos.' }}
-                            </p>
+        <ion-grid fixed class="match-page">
+
+            <!-- Fecha, lugar y cupo -->
+            <section class="hero" aria-label="Datos del partido">
+                <p class="hero-weekday">{{ match.date.toDate() | date:'EEEE' }}</p>
+                <h1 class="hero-date">{{ match.date.toDate() | date:"d 'de' MMMM" }}</h1>
+                <div class="hero-meta">
+                    <span>
+                        <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+                        {{ match.date.toDate() | date:'HH:mm' }} hs
+                    </span>
+                    @if (match.location) {
+                        <span>
+                            <ion-icon name="pin" aria-hidden="true"></ion-icon>
+                            {{ match.location }}
+                        </span>
+                    }
+                </div>
+
+                <div class="hero-capacity">
+                    <div class="capacity-bar" aria-hidden="true">
+                        <div class="capacity-fill" [style.width.%]="players().length * 100 / match.maxPlayers"></div>
+                    </div>
+                    <div class="capacity-row">
+                        <span><strong>{{ players().length }}</strong> de {{ match.maxPlayers }} anotados</span>
+                        @if (matchOver()) {
+                            <span class="status-chip status-muted">Terminado</span>
+                        } @else if (subscribed()) {
+                            <span class="status-chip status-on">
+                                <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+                                Estás anotado
+                            </span>
+                        } @else if (fullMatch()) {
+                            <span class="status-chip status-muted">Lleno</span>
+                        } @else {
+                            <span class="status-chip status-open">
+                                {{ spotsLeft() === 1 ? 'Falta 1' : 'Faltan ' + spotsLeft() }}
+                            </span>
                         }
+                    </div>
+                </div>
+            </section>
+
+            <!-- Administración: solo cuando hay algo para hacer -->
+            @if (isAdmin() && showAdminPanel()) {
+                <section class="admin-panel" aria-labelledby="admin-title">
+                    <h2 id="admin-title" class="admin-title">
+                        <ion-icon name="settings" aria-hidden="true"></ion-icon>
+                        Administración
+                    </h2>
+                    @if (teamsOutdated()) {
+                        <p class="admin-warning">
+                            <ion-icon name="information-circle" color="warning" aria-hidden="true"></ion-icon>
+                            Los equipos ya no coinciden con los anotados.
+                            {{ fullMatch() ? 'Volvé a armarlos.' : 'Cuando se complete el partido, volvé a armarlos.' }}
+                        </p>
+                    }
+                    <div class="admin-actions">
                         @if (fullMatch() && (!matchOver() || teamsOutdated())) {
                             @if (!hasTeams() || teamsOutdated()) {
-                                <ion-button color="primary" expand="block" class="ion-margin" (click)="teams()">
-                                    <ion-icon name="football" class="ion-margin"></ion-icon>
-                                    Armar Equipos
-                                    <ion-icon name="football" class="ion-margin"></ion-icon>
+                                <ion-button expand="block" (click)="teams()">
+                                    <ion-icon name="shuffle" slot="start" aria-hidden="true"></ion-icon>
+                                    Armar equipos
                                 </ion-button>
                             } @else {
-                                <ion-button color="warning" expand="block" class="ion-margin"
-                                    [routerLink]="['/change-teams', matchId]">
-                                    <ion-icon name="arrow-down" class="ion-margin"></ion-icon>
-                                    Cambiar Equipos
-                                    <ion-icon name="arrow-up" class="ion-margin"></ion-icon>
+                                <ion-button expand="block" fill="outline" [routerLink]="['/change-teams', matchId]">
+                                    <ion-icon name="swap-vertical" slot="start" aria-hidden="true"></ion-icon>
+                                    Cambiar equipos
                                 </ion-button>
                             }
                         }
                         @if (matchOver() && fullMatch() && hasTeams() && !teamsOutdated()) {
-                            <ion-button color="success" expand="block" class="ion-margin" (click)="theWinnerIs()">
-                                <ion-icon name="trophy" class="ion-margin"></ion-icon>
-                                ¿ Quién ganó ?
-                                <ion-icon name="trophy" class="ion-margin"></ion-icon>
+                            <ion-button expand="block" color="success" (click)="theWinnerIs()">
+                                <ion-icon name="trophy" slot="start" aria-hidden="true"></ion-icon>
+                                Cargar quién ganó
                             </ion-button>
                         }
                         @if (matchOver()) {
-                            <ion-button color="danger" expand="block" class="ion-margin" (click)="suspendedMatch()">
-                                <ion-icon name="stop-circle" class="ion-margin"></ion-icon>
-                                Suspendido
-                                <ion-icon name="stop-circle" class="ion-margin"></ion-icon>
+                            <ion-button expand="block" fill="outline" color="danger" (click)="suspendedMatch()">
+                                <ion-icon name="stop-circle" slot="start" aria-hidden="true"></ion-icon>
+                                Se suspendió
                             </ion-button>
                         }
-                    </ion-card-content>
-                </ion-card>
-            }
-
-            <ion-card>
-                <ion-item lines="none">
-                    <ion-icon name="calendar" slot="start"></ion-icon>
-                    <ion-label>
-                        {{ match.date.toDate() | date: 'EEE dd/MM/yyyy HH:mm' }} Hs.
-                    </ion-label>
-                </ion-item>
-                <ion-item lines="none">
-                    <ion-icon name="pin" slot="start"></ion-icon>
-                    <ion-label>
-                        {{ match.location }}
-                    </ion-label>
-                    <ion-icon name="people" class="ion-margin-end"></ion-icon>
-                    <ion-label>
-                        {{ players().length }} / {{ match.maxPlayers }}
-                    </ion-label>
-                </ion-item>
-            </ion-card>
-
-            @if (players().length === 0) {
-                <ion-card>
-                    <ion-card-header>
-                        <ion-card-subtitle>Sé el primero! ☝️</ion-card-subtitle>
-                        <ion-card-title>Anotados</ion-card-title>
-                    </ion-card-header>
-                    <ion-card-content>
-                        Todavía no se anotó nadie a este partido 😔
-                    </ion-card-content>
-                </ion-card>
-            }
-
-            @if (!hasTeams()) {
-                <ion-card>
-                    <ion-card-header>
-                        <ion-card-title>
-                            <ion-icon name="football"></ion-icon>
-                            Anotados
-                        </ion-card-title>
-                    </ion-card-header>
-                    <ion-list>
-                        @for (subscriber of players(); track subscriber.id) {
-                            <ion-item>
-                                <ion-avatar slot="start">
-                                    <img [src]="subscriber.image || 'assets/img/playerAvatar.png'" appSafeImage
-                                        alt="Avatar">
-                                </ion-avatar>
-                                <h6>{{ subscriber.nickname }}</h6>
-                                @if (canRemove(subscriber)) {
-                                    <ion-button shape="round" color="danger" class="ion-margin-start"
-                                        [attr.aria-label]="'Bajar a ' + subscriber.nickname"
-                                        (click)="removeSubscriber(subscriber)">
-                                        <ion-icon slot="icon-only" name="close"></ion-icon>
-                                    </ion-button>
-                                }
-                                <h4 slot="end">
-                                    <app-score [player]="subscriber"></app-score>
-                                </h4>
-                            </ion-item>
-                        }
-                    </ion-list>
-                </ion-card>
-            }
-
-            @if (teamWhite().length > 1) {
-                <ion-toolbar mode="ios" class="shirt-toolbar shirt-white">
-                    <ion-label slot="start" class="ion-margin-horizontal">
-                        <ion-icon name="flag-outline"></ion-icon>
-                    </ion-label>
-                    <ion-title class="teamToolbar">Remera <strong>BLANCA</strong></ion-title>
-                    <ion-label slot="end" class="ion-margin-horizontal">
-                        <ion-icon name="flag-outline"></ion-icon>
-                    </ion-label>
-                </ion-toolbar>
-                <ion-card class="team-card">
-                    <ion-grid>
-                        <ion-row class="ion-justify-content-center">
-                            <img src="assets/img/goal.png" width="64" class="ion-margin-bottom" alt="Arco">
-                        </ion-row>
-                        <ion-row class="ion-justify-content-center">
-                            @for (teamPlayer of teamWhite(); track teamPlayer.id) {
-                                <ion-chip class="shirt-chip shirt-white">
-                                    <ion-avatar class="ion-margin-end">
-                                        <img [src]="teamPlayer.image || 'assets/img/playerAvatar.png'" appSafeImage
-                                            alt="Avatar">
-                                    </ion-avatar>
-                                    <ion-label><strong>{{ teamPlayer.nickname }}</strong></ion-label>
-                                    <ion-badge class="ion-margin-start">
-                                        <app-score-number [player]="teamPlayer"></app-score-number>
-                                    </ion-badge>
-                                </ion-chip>
-                            }
-                        </ion-row>
-                    </ion-grid>
-                </ion-card>
+                    </div>
+                </section>
             }
 
             @if (hasTeams()) {
-                <ion-toolbar mode="ios" class="shirt-toolbar shirt-black">
-                    <ion-label slot="start" class="ion-margin-horizontal">
-                        <ion-icon name="flag"></ion-icon>
-                    </ion-label>
-                    <ion-title class="teamToolbar">Remera <strong>NEGRA</strong></ion-title>
-                    <ion-label slot="end" class="ion-margin-horizontal">
-                        <ion-icon name="flag"></ion-icon>
-                    </ion-label>
-                </ion-toolbar>
-                <ion-card class="team-card">
-                    <ion-grid>
-                        <ion-row class="ion-justify-content-center">
-                            @for (teamPlayer of teamBlack(); track teamPlayer.id) {
-                                <ion-chip class="shirt-chip shirt-black">
-                                    <ion-avatar class="ion-margin-end">
-                                        <img [src]="teamPlayer.image || 'assets/img/playerAvatar.png'" appSafeImage
-                                            alt="Avatar">
+                <!-- Equipos sobre la cancha -->
+                <section aria-labelledby="teams-title">
+                    <h2 id="teams-title" class="section-title">Equipos</h2>
+                    <div class="team">
+                        <h3 class="team-bar shirt-white">
+                            Remera blanca
+                            <span class="team-avg">prom. <strong class="stat-number">{{ teamWhiteAvg() | number:'1.0-0' }}</strong></span>
+                        </h3>
+                        <div class="team-field">
+                            <img src="assets/img/goal.png" width="64" class="goal" alt="">
+                            <ul class="team-players">
+                                @for (teamPlayer of teamWhite(); track teamPlayer.id) {
+                                    <li class="shirt-chip shirt-white">
+                                        <img [src]="teamPlayer.image || 'assets/img/playerAvatar.png'" appSafeImage alt="">
+                                        <span class="shirt-name">{{ teamPlayer.nickname }}</span>
+                                        <span class="shirt-score stat-number"><app-score-number [player]="teamPlayer"></app-score-number></span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="team">
+                        <h3 class="team-bar shirt-black">
+                            Remera negra
+                            <span class="team-avg">prom. <strong class="stat-number">{{ teamBlackAvg() | number:'1.0-0' }}</strong></span>
+                        </h3>
+                        <div class="team-field">
+                            <ul class="team-players">
+                                @for (teamPlayer of teamBlack(); track teamPlayer.id) {
+                                    <li class="shirt-chip shirt-black">
+                                        <img [src]="teamPlayer.image || 'assets/img/playerAvatar.png'" appSafeImage alt="">
+                                        <span class="shirt-name">{{ teamPlayer.nickname }}</span>
+                                        <span class="shirt-score stat-number"><app-score-number [player]="teamPlayer"></app-score-number></span>
+                                    </li>
+                                }
+                            </ul>
+                            <img src="assets/img/goal.png" width="64" class="goal goal-flipped" alt="">
+                        </div>
+                    </div>
+                </section>
+            } @else {
+                <!-- Anotados -->
+                <section aria-labelledby="players-title">
+                    <h2 id="players-title" class="section-title">Anotados</h2>
+                    @if (players().length === 0) {
+                        <div class="empty-state">
+                            <ion-icon name="football" aria-hidden="true"></ion-icon>
+                            <p>Todavía no se anotó nadie.<br>¡Sé el primero!</p>
+                        </div>
+                    } @else {
+                        <ion-list class="players-list" lines="full">
+                            @for (subscriber of players(); track subscriber.id; let i = $index) {
+                                <ion-item>
+                                    <span class="player-position" slot="start" aria-hidden="true">{{ i + 1 }}</span>
+                                    <ion-avatar slot="start">
+                                        <img [src]="subscriber.image || 'assets/img/playerAvatar.png'" appSafeImage alt="">
                                     </ion-avatar>
-                                    <ion-label><strong>{{ teamPlayer.nickname }}</strong></ion-label>
-                                    <ion-badge class="ion-margin-start">
-                                        <app-score-number [player]="teamPlayer"></app-score-number>
-                                    </ion-badge>
-                                </ion-chip>
+                                    <ion-label>
+                                        {{ subscriber.nickname }}
+                                        @if (subscriber.id === player()?.id) {
+                                            <span class="you-tag">vos</span>
+                                        }
+                                    </ion-label>
+                                    <span slot="end" class="player-score stat-number">
+                                        <app-score [player]="subscriber"></app-score>
+                                    </span>
+                                    @if (canRemove(subscriber)) {
+                                        <ion-button slot="end" fill="clear" color="danger" class="remove-button"
+                                            [attr.aria-label]="'Bajar a ' + subscriber.nickname"
+                                            (click)="removeSubscriber(subscriber)">
+                                            <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+                                        </ion-button>
+                                    }
+                                </ion-item>
                             }
-                        </ion-row>
-                        <ion-row class="ion-justify-content-center">
-                            <img src="assets/img/goal.png" width="64" class="ion-margin-top goal-flipped" alt="Arco">
-                        </ion-row>
-                    </ion-grid>
-                </ion-card>
+                        </ion-list>
+                    }
+                </section>
             }
+
         </ion-grid>
     </ion-content>
 
-    @if (!subscribed() && !fullMatch() && !matchOver()) {
-        <ion-footer>
-            <ion-toolbar color="success" (click)="joinMatch()">
-                <ion-buttons slot="start">
-                    <ion-button>
-                        <ion-icon slot="icon-only" name="log-in"></ion-icon>
+    <!-- Acciones del jugador -->
+    @let canJoin = !subscribed() && !fullMatch() && !matchOver();
+    @let canAddFriend = (subscribed() || isAdmin('superadmin')) && !hasTeams() && !fullMatch();
+    @let canLeave = subscribed() && !hasTeams();
+    @if (canJoin || canAddFriend || canLeave) {
+        <ion-footer class="actions-footer">
+            <div class="actions">
+                @if (canJoin) {
+                    <ion-button expand="block" color="success" class="action-main" (click)="joinMatch()">
+                        <ion-icon name="log-in" slot="start" aria-hidden="true"></ion-icon>
+                        Anotarme
                     </ion-button>
-                </ion-buttons>
-                <ion-title>Anotarme!</ion-title>
-            </ion-toolbar>
-        </ion-footer>
-    }
-
-    @if ((subscribed() || isAdmin('superadmin')) && !hasTeams() && !fullMatch()) {
-        <ion-footer>
-            <ion-toolbar color="tertiary" (click)="addFriend()">
-                <ion-buttons slot="start">
-                    <ion-button>
-                        <ion-icon slot="icon-only" name="person-add"></ion-icon>
-                    </ion-button>
-                </ion-buttons>
-                <ion-title>Anotar a un amigo</ion-title>
-            </ion-toolbar>
-        </ion-footer>
-    }
-
-    @if (subscribed() && !hasTeams()) {
-        <ion-footer>
-            <ion-toolbar color="danger" (click)="unsubscribeAlert()">
-                <ion-buttons slot="start">
-                    <ion-button>
-                        <ion-icon slot="icon-only" name="log-out"></ion-icon>
-                    </ion-button>
-                </ion-buttons>
-                <ion-title>No voy a jugar</ion-title>
-            </ion-toolbar>
+                }
+                <div class="actions-row">
+                    @if (canAddFriend) {
+                        <ion-button fill="outline" (click)="addFriend()">
+                            <ion-icon name="person-add" slot="start" aria-hidden="true"></ion-icon>
+                            Anotar a un amigo
+                        </ion-button>
+                    }
+                    @if (canLeave) {
+                        <ion-button fill="clear" color="danger" (click)="unsubscribeAlert()">
+                            <ion-icon name="log-out" slot="start" aria-hidden="true"></ion-icon>
+                            No voy a jugar
+                        </ion-button>
+                    }
+                </div>
+            </div>
         </ion-footer>
     }
 }

@@ -1,31 +1,225 @@
-ion-card-header {
-    padding-bottom: 0px;
+.match-page {
+    padding: 16px 16px 24px;
+}
 
-    ion-card-title {
+/* Fecha, lugar y cupo ----------------------------------------------- */
+
+.hero {
+    padding: 20px;
+    border-radius: 20px;
+    background: var(--brand-green);
+    color: #ffffff;
+}
+
+.hero-weekday {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brand-mint);
+}
+
+.hero-date {
+    margin: 2px 0 10px;
+    font-family: var(--brand-font);
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+}
+
+.hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    font-size: 15px;
+
+    span {
+        display: inline-flex;
         align-items: center;
-        display: flex;
-        ion-icon {
-            margin-right: 8px;
-        }
+        gap: 6px;
+    }
+
+    ion-icon {
+        color: var(--brand-mint);
     }
 }
 
-ion-badge {
-    min-width: 25px;
+.hero-capacity {
+    margin-top: 18px;
+
+    .capacity-bar {
+        background: rgba(0, 0, 0, 0.3);
+    }
 }
 
-.teamToolbar {
-    font-size: medium;
-    font-weight: normal;
+.capacity-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 14px;
+
+    strong {
+        font-family: var(--brand-font);
+        font-size: 18px;
+    }
 }
 
-.team-card {
-    background-image: url('../../../assets/img/green-grass-128x128.png');
-    border: 5px solid var(--shirt-white);
+.hero .status-open {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+
+.hero .status-muted {
+    background: rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+}
+
+/* Administración ---------------------------------------------------- */
+
+.admin-panel {
+    margin-top: 16px;
+    padding: 16px;
+    border: 1px dashed var(--ion-color-step-300);
+    border-radius: 16px;
+}
+
+.admin-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ion-color-step-650);
+}
+
+.admin-warning {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 14px;
+
+    ion-icon {
+        flex-shrink: 0;
+        font-size: 20px;
+    }
+}
+
+.admin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    ion-button {
+        margin: 0;
+    }
+}
+
+/* Anotados ---------------------------------------------------------- */
+
+.players-list {
+    padding: 0;
+    border: 1px solid var(--ion-border-color);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.player-position {
+    width: 18px;
+    margin-inline-end: 8px;
+    font-family: var(--brand-font);
+    font-weight: 700;
+    font-size: 14px;
+    text-align: right;
+    color: var(--ion-color-step-500);
+}
+
+.you-tag {
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(var(--ion-color-success-rgb), 0.18);
+    color: var(--ion-color-success);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.player-score {
+    font-size: 16px;
+}
+
+.remove-button {
+    margin-inline-start: 0;
+}
+
+/* Equipos: una cancha por equipo ----------------------------------- */
+
+.team {
+    margin-bottom: 16px;
+}
+
+.team-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 14px 14px 0 0;
+    background: var(--shirt-bg);
+    color: var(--shirt-fg);
+    font-family: var(--brand-font);
+    font-weight: 800;
+    font-size: 17px;
+}
+
+.team-avg {
+    font-family: var(--ion-font-family);
+    font-weight: 400;
+    font-size: 13px;
+
+    strong {
+        font-size: 16px;
+    }
+}
+
+.team-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 10px 16px;
+    border: 5px solid var(--brand-cream);
+    border-top: 0;
+    border-radius: 0 0 14px 14px;
+    background: url('../../../assets/img/green-grass-128x128.png') repeat;
+}
+
+.team-field:has(.goal-flipped) {
+    padding: 16px 10px 12px;
+}
+
+.goal {
+    display: block;
 }
 
 .goal-flipped {
     transform: rotate(180deg);
+}
+
+.team-players {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 /* Remeras de los equipos: blanco y negro son los colores reales de las camisetas */
@@ -39,18 +233,77 @@ ion-badge {
     --shirt-fg: var(--shirt-black-contrast);
 }
 
-.shirt-toolbar {
-    --background: var(--shirt-bg);
-    --color: var(--shirt-fg);
-}
-
 .shirt-chip {
-    --background: var(--shirt-bg);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 3px 4px 3px 3px;
+    border-radius: 999px;
     background: var(--shirt-bg);
     color: var(--shirt-fg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 
-    ion-badge {
-        --background: var(--shirt-fg);
-        --color: var(--shirt-bg);
+    img {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+}
+
+.shirt-name {
+    overflow: hidden;
+    font-weight: 700;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shirt-score {
+    min-width: 26px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: var(--shirt-fg);
+    color: var(--shirt-bg);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Acciones del jugador ---------------------------------------------- */
+
+.actions-footer {
+    background: var(--ion-background-color);
+    box-shadow: 0 -1px 0 var(--ion-border-color);
+}
+
+.actions {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 10px 16px calc(env(safe-area-inset-bottom) + 10px);
+}
+
+.action-main {
+    --border-radius: 14px;
+    height: 50px;
+    margin: 0 0 4px;
+    font-family: var(--brand-font);
+    font-weight: 800;
+    font-size: 17px;
+}
+
+.actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 8px;
+
+    &:empty {
+        display: none;
+    }
+
+    ion-button {
+        flex: 1 1 auto;
+        margin: 0;
     }
 }

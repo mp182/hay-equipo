@@ -83,3 +83,93 @@ ion-card {
   border-radius: 16px;
   box-shadow: none;
 }
+
+/* Piezas compartidas entre pantallas --------------------------------- */
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Visible solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.section-title {
+  margin: 28px 4px 12px;
+  font-family: var(--brand-font);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+/* Barra de cupo de un partido */
+.capacity-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ion-color-step-150);
+  overflow: hidden;
+}
+
+.capacity-fill {
+  height: 100%;
+  max-width: 100%;
+  border-radius: 3px;
+  background: var(--ion-color-success);
+}
+
+/* Estado de un partido: Anotado / Faltan N / Lleno */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-on {
+  background: var(--ion-color-success);
+  color: var(--ion-color-success-contrast);
+}
+
+.status-muted {
+  background: var(--ion-color-step-200);
+  color: var(--ion-text-color);
+}
+
+.status-open {
+  background: rgba(var(--ion-color-secondary-rgb), 0.16);
+  color: var(--ion-color-secondary);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 16px;
+  border: 1px dashed var(--ion-border-color);
+  border-radius: 16px;
+  color: var(--ion-color-step-650);
+  text-align: center;
+
+  ion-icon {
+    font-size: 36px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+

@@ -3,8 +3,8 @@ import {
   addCircleOutline, arrowDown, arrowUp, calendar, checkmark,
   checkmarkCircle, checkmarkDoneCircle, chevronForward, close, closeCircle, cloudOfflineOutline, create, downloadOutline, enter, flag,
   flagOutline, football, informationCircle, informationCircleOutline, logIn, logOut, medal, newspaperOutline,
-  people, personAdd, pin, play, podium, refresh, removeCircle, rocketOutline, sad, settings, star, starHalf,
-  starOutline, stopCircle, timeOutline, trophy, wifi
+  people, personAdd, pin, play, podium, refresh, removeCircle, rocketOutline, sad, settings, shuffle, star, starHalf,
+  starOutline, stopCircle, swapVertical, timeOutline, trophy, wifi
 } from 'ionicons/icons';
 
 /**
@@ -16,7 +16,7 @@ export function registerIcons() {
     addCircleOutline, arrowDown, arrowUp, calendar, checkmark,
     checkmarkCircle, checkmarkDoneCircle, chevronForward, close, closeCircle, cloudOfflineOutline, create, downloadOutline, enter, flag,
     flagOutline, football, informationCircle, informationCircleOutline, logIn, logOut, medal, newspaperOutline,
-    people, personAdd, pin, play, podium, refresh, removeCircle, rocketOutline, sad, settings, star, starHalf,
-    starOutline, stopCircle, timeOutline, trophy, wifi
+    people, personAdd, pin, play, podium, refresh, removeCircle, rocketOutline, sad, settings, shuffle, star, starHalf,
+    starOutline, stopCircle, swapVertical, timeOutline, trophy, wifi
   });
 }

@@ -1,18 +1,17 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
-  AlertButton, AlertController, IonAvatar, IonBackButton, IonBadge, IonButton, IonButtons, IonCard, IonCardContent,
-  IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem,
-  IonLabel, IonList, IonMenuButton, IonRow, IonTitle, IonToolbar
+  AlertButton, AlertController, IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonGrid,
+  IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenuButton, IonTitle, IonToolbar
 } from '@ionic/angular';
 import { combineLatest, interval, map } from 'rxjs';
 
 import { ScoreComponent } from 'src/app/components/score/score.component';
 import { ScoreNumberComponent } from 'src/app/components/score-number/score-number.component';
 import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
-import { sortByScore } from 'src/app/helpers/score.helpers';
+import { playerScore, sortByScore } from 'src/app/helpers/score.helpers';
 import { Match } from 'src/app/models/match.interface';
 import { Player } from 'src/app/models/player.interface';
 import { AuthenticationService } from 'src/app/services/authentication.service';
@@ -30,10 +29,9 @@ const MATCH_DURATION = 60 * 60 * 1000;
   templateUrl: './match.page.html',
   styleUrls: ['./match.page.scss'],
   imports: [
-    DatePipe, RouterLink, SafeImageDirective, ScoreComponent, ScoreNumberComponent,
-    IonAvatar, IonBackButton, IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle,
-    IonCardTitle, IonChip, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList,
-    IonMenuButton, IonRow, IonTitle, IonToolbar
+    DatePipe, DecimalPipe, RouterLink, SafeImageDirective, ScoreComponent, ScoreNumberComponent,
+    IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem,
+    IonLabel, IonList, IonMenuButton, IonTitle, IonToolbar
   ],
 })
 export class MatchPage implements OnInit {
@@ -71,6 +69,17 @@ export class MatchPage implements OnInit {
 
   readonly fullMatch = signal(false);
   readonly subscribed = signal(false);
+
+  /** Promedio de cada equipo, para ver de un vistazo si quedaron parejos. */
+  readonly teamWhiteAvg = computed(() => teamAverage(this.teamWhite()));
+  readonly teamBlackAvg = computed(() => teamAverage(this.teamBlack()));
+
+  /** Lugares libres (nunca negativo). */
+  readonly spotsLeft = computed(() => Math.max(0, (this.match()?.maxPlayers ?? 0) - this.players().length));
+
+  /** Si el admin tiene alguna acción disponible (si no, no se muestra la sección vacía). */
+  readonly showAdminPanel = computed(() =>
+    this.teamsOutdated() || this.matchOver() || (this.fullMatch() && !this.matchOver()));
 
   private alert?: HTMLIonAlertElement;
 
@@ -264,4 +273,8 @@ export class MatchPage implements OnInit {
     }
   }
 
+}
+
+function teamAverage(team: Player[]): number {
+  return team.length ? team.reduce((sum, player) => sum + playerScore(player), 0) / team.length : 0;
 }

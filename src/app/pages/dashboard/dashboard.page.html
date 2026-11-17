@@ -105,7 +105,7 @@
                                         Anotado
                                     </span>
                                 } @else if (match.fullMatch) {
-                                    <span class="status-chip status-full">Lleno</span>
+                                    <span class="status-chip status-muted">Lleno</span>
                                 } @else {
                                     <span class="status-chip status-open">
                                         {{ match.maxPlayers - taken === 1 ? 'Falta 1' : 'Faltan ' + (match.maxPlayers - taken) }}
