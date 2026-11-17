@@ -38,7 +38,6 @@
     "@angular/language-service": "^21.2.0",
     "@eslint/js": "^9.39.5",
     "@firebase/rules-unit-testing": "^5.0.2",
-    "@ionic/angular-toolkit": "^13.0.0",
     "angular-eslint": "^21.4.0",
     "eslint": "^9.39.0",
     "jsdom": "^31.0.0",

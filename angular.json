@@ -9,13 +9,8 @@
       "projectType": "application",
       "prefix": "app",
       "schematics": {
-        "@ionic/angular-toolkit:page": {
-          "styleext": "scss",
-          "standalone": true
-        },
-        "@ionic/angular-toolkit:component": {
-          "styleext": "scss",
-          "standalone": true
+        "@schematics/angular:component": {
+          "style": "scss"
         }
       },
       "architect": {
@@ -112,7 +107,6 @@
     }
   },
   "cli": {
-    "schematicCollections": ["@ionic/angular-toolkit"],
     "analytics": false
   }
 }

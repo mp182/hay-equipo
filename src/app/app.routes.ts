@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
+import { adminGuard, authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,6 +29,7 @@ export const routes: Routes = [
       },
       {
         path: 'add-game',
+        canActivate: [adminGuard()],
         loadComponent: () => import('./pages/add-game/add-game.page').then(m => m.AddGamePage)
       },
       {
@@ -41,6 +42,7 @@ export const routes: Routes = [
       },
       {
         path: 'add-news',
+        canActivate: [adminGuard()],
         loadComponent: () => import('./pages/add-news/add-news.page').then(m => m.AddNewsPage)
       },
       {
@@ -63,10 +65,12 @@ export const routes: Routes = [
       },
       {
         path: 'new-season',
+        canActivate: [adminGuard('superadmin')],
         loadComponent: () => import('./pages/new-season/new-season.page').then(m => m.NewSeasonPage)
       },
       {
         path: 'change-teams/:id',
+        canActivate: [adminGuard()],
         loadComponent: () => import('./pages/change-teams/change-teams.page').then(m => m.ChangeTeamsPage)
       },
       {

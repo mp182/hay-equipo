@@ -7,7 +7,7 @@ import {
   IonCardHeader, IonCardSubtitle, IonCardTitle, IonChip, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem,
   IonLabel, IonList, IonMenuButton, IonRow, IonTitle, IonToolbar
 } from '@ionic/angular';
-import { combineLatest, map } from 'rxjs';
+import { combineLatest, interval, map } from 'rxjs';
 
 import { ScoreComponent } from 'src/app/components/score/score.component';
 import { ScoreNumberComponent } from 'src/app/components/score-number/score-number.component';
@@ -21,6 +21,9 @@ import { teamsOutOfDate } from 'src/app/helpers/teams.helpers';
 import { DbService, MatchClosedError, MatchFullError, TeamsOutOfDateError } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
+
+/** Cuánto dura un partido: pasado ese tiempo desde la hora de inicio, se puede cargar el resultado. */
+const MATCH_DURATION = 60 * 60 * 1000;
 
 @Component({
   selector: 'app-match',
@@ -57,13 +60,25 @@ export class MatchPage implements OnInit {
   readonly teamsOutdated = computed(() =>
     this.hasTeams() && teamsOutOfDate(this.match()?.playersList ?? [], this.teamWhite(), this.teamBlack()));
 
+  /** Hora actual, refrescada cada minuto: así el partido pasa a terminado aunque la pantalla quede abierta. */
+  private readonly now = signal(Date.now());
+
+  /** El partido se considera terminado una hora después de empezar. */
+  readonly matchOver = computed(() => {
+    const match = this.match();
+    return !!match && this.now() > match.date.toDate().getTime() + MATCH_DURATION;
+  });
+
   readonly fullMatch = signal(false);
-  readonly matchOver = signal(false);
   readonly subscribed = signal(false);
 
   private alert?: HTMLIonAlertElement;
 
   ngOnInit() {
+    interval(60 * 1000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.now.set(Date.now()));
+
     this.db.getTeamBlack(this.matchId)
       .pipe(map(sortByScore), takeUntilDestroyed(this.destroyRef))
       .subscribe(team => this.teamBlack.set(team));
@@ -83,9 +98,6 @@ export class MatchPage implements OnInit {
         this.match.set(match ?? null);
 
         if (match) {
-          // El partido se considera terminado una hora después de empezar.
-          const matchEnd = match.date.toDate().getTime() + 60 * 60 * 1000;
-          this.matchOver.set(Date.now() > matchEnd);
           this.fullMatch.set((match.playersList?.length ?? 0) >= +match.maxPlayers);
           this.subscribed.set(!!player && (match.playersList ?? []).includes(player.id));
         }

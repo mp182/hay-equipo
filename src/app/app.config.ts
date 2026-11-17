@@ -6,9 +6,12 @@ import localeEsAr from '@angular/common/locales/es-AR';
 import { PreloadAllModules, RouteReuseStrategy, provideRouter, withPreloading } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { getApp, initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { connectAuthEmulator, getAuth, provideAuth } from '@angular/fire/auth';
-import { connectFirestoreEmulator, getFirestore, provideFirestore } from '@angular/fire/firestore';
+import {
+  connectFirestoreEmulator, getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  provideFirestore
+} from '@angular/fire/firestore';
 
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
@@ -34,11 +37,17 @@ export const appConfig: ApplicationConfig = {
       return auth;
     }),
     provideFirestore(() => {
-      const firestore = getFirestore();
       if (environment.useEmulators) {
+        // Con los emuladores, caché en memoria: si se vuelven a cargar los datos de prueba no queda nada viejo guardado.
+        const firestore = getFirestore();
         connectFirestoreEmulator(firestore, 'localhost', 8080);
+        return firestore;
       }
-      return firestore;
+      // Caché en el navegador (IndexedDB), compartida entre pestañas: la app abre con los últimos datos
+      // aunque no haya conexión, y después se actualiza sola.
+      return initializeFirestore(getApp(), {
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+      });
     }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
