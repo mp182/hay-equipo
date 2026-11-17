@@ -1,7 +1,7 @@
 @if (player$ | async; as player) {
     <ion-header>
         <ion-toolbar>
-            <ion-title>Hola {{ player.nickname }}!</ion-title>
+            <ion-title>Hay Equipo!</ion-title>
             <ion-buttons slot="secondary">
                 <ion-menu-button [autoHide]="true"></ion-menu-button>
             </ion-buttons>
@@ -9,128 +9,148 @@
     </ion-header>
 
     <ion-content>
-        <ion-grid fixed>
-            <ion-card>
-                <ion-card-content>
-                    <div class="flex-container">
-                        <ion-avatar>
-                            <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="Avatar">
-                        </ion-avatar>
+        <ion-grid fixed class="dashboard">
+
+            <!-- Perfil y estadísticas -->
+            <section class="profile" aria-label="Tus estadísticas">
+                <div class="profile-head">
+                    <ion-avatar class="profile-avatar">
+                        <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="">
+                    </ion-avatar>
+                    <div class="profile-name">
+                        <span class="profile-greeting">Hola,</span>
                         <h1 class="text-truncate">{{ player.nickname }}</h1>
-                        <h1 class="score-wrapper stat-number">
-                            <app-score [player]="player"></app-score>
-                        </h1>
                     </div>
+                </div>
 
-                    <div class="flex-container">
-                        <div class="flex-container-alt">
-                            <ion-icon name="play" color="primary"></ion-icon>
-                            <ion-label>Jugados</ion-label>
-                        </div>
-                        <ion-badge color="primary">{{ player.played }}</ion-badge>
-                        <div class="flex-container-alt">
-                            <ion-icon name="trophy" color="warning"></ion-icon>
-                            <ion-label>Ganados</ion-label>
-                        </div>
-                        <ion-badge color="primary">{{ player.won }}</ion-badge>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-number">{{ player.played }}</span>
+                        <span class="stat-label">Jugados</span>
                     </div>
+                    <div class="stat">
+                        <span class="stat-number">{{ player.won }}</span>
+                        <span class="stat-label">Ganados</span>
+                    </div>
+                    <div class="stat stat-highlight">
+                        <span class="stat-number"><app-score [player]="player"></app-score></span>
+                        <span class="stat-label">Promedio</span>
+                    </div>
+                </div>
 
-                    <div class="flex-container">
-                        <div class="flex-container-alt">
-                            <ion-icon name="calendar" color="secondary"></ion-icon>
-                            <ion-label>Últimos 5</ion-label>
-                        </div>
+                <div class="last-games">
+                    <span class="stat-label">Últimos 5</span>
+                    <ol class="last-games-dots">
                         @for (i of lastGamesSlots; track i) {
                             @switch (player.lastGames?.[i]) {
                                 @case ('G') {
-                                    <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                                    <li class="dot dot-won" title="Ganado"><span class="sr-only">Ganado</span><span aria-hidden="true">G</span></li>
                                 }
                                 @case ('P') {
-                                    <ion-icon name="close-circle" color="danger"></ion-icon>
+                                    <li class="dot dot-lost" title="Perdido"><span class="sr-only">Perdido</span><span aria-hidden="true">P</span></li>
                                 }
                                 @default {
-                                    <ion-icon name="remove-circle" color="medium"></ion-icon>
+                                    <li class="dot dot-empty" title="Sin jugar"><span class="sr-only">Sin jugar</span></li>
                                 }
                             }
                         }
-                    </div>
+                    </ol>
+                </div>
 
-                    <ion-button type="button" expand="block" color="primary" class="ion-margin-vertical"
-                        routerLink="/ranking-tabs">
-                        <ion-icon name="podium" class="ion-margin"></ion-icon>
-                        Ranking
-                        <ion-icon name="podium" class="ion-margin"></ion-icon>
-                    </ion-button>
-                </ion-card-content>
-            </ion-card>
+                <ion-button fill="outline" expand="block" routerLink="/ranking-tabs" class="ranking-button">
+                    <ion-icon name="podium" slot="start"></ion-icon>
+                    Ver ranking
+                </ion-button>
+            </section>
 
-            <ion-card>
-                <ion-card-header>
-                    <ion-card-title>
-                        <ion-icon name="football"></ion-icon>
-                        Partidos disponibles
-                    </ion-card-title>
-                </ion-card-header>
+            <!-- Partidos -->
+            <section aria-labelledby="matches-title">
+                <h2 id="matches-title" class="section-title">Partidos</h2>
 
-                <ion-card-content>
-                    @if (matches$ | async; as matches) {
-                        @for (match of matches; track match.id) {
-                            @if (match.playerOn) {
-                                <ion-button type="button" expand="block" color="success"
-                                    [routerLink]="['/match', match.id]" class="ion-margin-vertical">
-                                    <ion-icon name="checkmark-done-circle" class="ion-margin"></ion-icon>
-                                    {{ match.date.toDate() | date:'EEE dd/MM HH:mm' }} Hs.
-                                    <ion-icon name="checkmark-done-circle" class="ion-margin"></ion-icon>
-                                </ion-button>
-                            } @else if (match.fullMatch) {
-                                <ion-button type="button" expand="block" color="danger"
-                                    [routerLink]="['/match', match.id]" class="ion-margin-vertical">
-                                    <ion-icon name="close-circle" class="ion-margin"></ion-icon>
-                                    {{ match.date.toDate() | date:'EEE dd/MM HH:mm' }} Hs.
-                                    <ion-icon name="close-circle" class="ion-margin"></ion-icon>
-                                </ion-button>
-                            } @else {
-                                <ion-button type="button" expand="block" color="dark"
-                                    [routerLink]="['/match', match.id]" class="ion-margin-vertical">
-                                    <ion-icon name="enter" class="ion-margin"></ion-icon>
-                                    {{ match.date.toDate() | date:'EEE dd/MM HH:mm' }} Hs.
-                                    <ion-icon name="enter" class="ion-margin"></ion-icon>
-                                </ion-button>
-                            }
-                        } @empty {
-                            <ion-button type="button" expand="block" color="light" class="ion-margin-vertical">
-                                <ion-icon name="sad" class="ion-margin"></ion-icon>
-                                No hay partido
-                                <ion-icon name="sad" class="ion-margin"></ion-icon>
-                            </ion-button>
-                        }
+                @if (matches$ | async; as matches) {
+                    @for (match of matches; track match.id) {
+                        @let taken = match.playersList?.length ?? 0;
+                        <ion-card button [routerLink]="['/match', match.id]" class="match-card"
+                            [class.is-on]="match.playerOn" [class.is-full]="match.fullMatch && !match.playerOn">
+                            <div class="match-date" aria-hidden="true">
+                                <span class="match-weekday">{{ match.date.toDate() | date:'EEE' }}</span>
+                                <span class="match-day">{{ match.date.toDate() | date:'d' }}</span>
+                                <span class="match-month">{{ match.date.toDate() | date:'MMM' }}</span>
+                            </div>
+
+                            <div class="match-info">
+                                <span class="sr-only">{{ match.date.toDate() | date:"EEEE d 'de' MMMM" }}</span>
+                                <span class="match-time">
+                                    <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+                                    {{ match.date.toDate() | date:'HH:mm' }} hs
+                                </span>
+                                @if (match.location) {
+                                    <span class="match-location text-truncate">
+                                        <ion-icon name="pin" aria-hidden="true"></ion-icon>
+                                        {{ match.location }}
+                                    </span>
+                                }
+                                <div class="match-capacity">
+                                    <div class="capacity-bar" aria-hidden="true">
+                                        <div class="capacity-fill" [style.width.%]="taken * 100 / match.maxPlayers"></div>
+                                    </div>
+                                    <span class="capacity-text">{{ taken }}/{{ match.maxPlayers }}</span>
+                                </div>
+                            </div>
+
+                            <div class="match-status">
+                                @if (match.playerOn) {
+                                    <span class="status-chip status-on">
+                                        <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+                                        Anotado
+                                    </span>
+                                } @else if (match.fullMatch) {
+                                    <span class="status-chip status-full">Lleno</span>
+                                } @else {
+                                    <span class="status-chip status-open">
+                                        {{ match.maxPlayers - taken === 1 ? 'Falta 1' : 'Faltan ' + (match.maxPlayers - taken) }}
+                                    </span>
+                                }
+                                <ion-icon name="chevron-forward" class="match-chevron" aria-hidden="true"></ion-icon>
+                            </div>
+                        </ion-card>
+                    } @empty {
+                        <div class="empty-state">
+                            <ion-icon name="football" aria-hidden="true"></ion-icon>
+                            <p>No hay partidos por ahora.</p>
+                        </div>
                     }
-                </ion-card-content>
-            </ion-card>
+                }
+            </section>
 
             <app-news-card [news]="news$ | async" [admin]="hasAdminRole(player)"></app-news-card>
 
-        </ion-grid>
+            <!-- Administración -->
+            @if (hasAdminRole(player)) {
+                <section aria-labelledby="admin-title">
+                    <h2 id="admin-title" class="section-title">Administración</h2>
+                    <ion-list class="admin-list" lines="full">
+                        <ion-item button detail routerLink="/add-game">
+                            <ion-icon name="football" slot="start" aria-hidden="true"></ion-icon>
+                            <ion-label>Nuevo partido</ion-label>
+                        </ion-item>
+                        <ion-item button detail routerLink="/add-news">
+                            <ion-icon name="newspaper-outline" slot="start" aria-hidden="true"></ion-icon>
+                            <ion-label>Nueva info</ion-label>
+                        </ion-item>
+                        @if (hasAdminRole(player, 'superadmin')) {
+                            <ion-item button detail routerLink="/new-season" lines="none">
+                                <ion-icon name="refresh" slot="start" color="danger" aria-hidden="true"></ion-icon>
+                                <ion-label>
+                                    Nueva temporada
+                                    <p>Divide a la mitad los partidos de todos</p>
+                                </ion-label>
+                            </ion-item>
+                        }
+                    </ion-list>
+                </section>
+            }
 
-        @if (hasAdminRole(player)) {
-            <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="ion-margin">
-                <ion-fab-button>
-                    <ion-icon name="add-circle-outline"></ion-icon>
-                </ion-fab-button>
-                <ion-fab-list side="top">
-                    <ion-fab-button routerLink="/add-game">
-                        <ion-icon name="football"></ion-icon>
-                    </ion-fab-button>
-                    <ion-fab-button routerLink="/add-news">
-                        <ion-icon name="information-circle"></ion-icon>
-                    </ion-fab-button>
-                    @if (hasAdminRole(player, 'superadmin')) {
-                        <ion-fab-button routerLink="/new-season">
-                            <ion-icon name="refresh"></ion-icon>
-                        </ion-fab-button>
-                    }
-                </ion-fab-list>
-            </ion-fab>
-        }
+        </ion-grid>
     </ion-content>
 }

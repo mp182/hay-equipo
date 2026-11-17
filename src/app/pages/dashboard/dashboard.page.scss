@@ -1,54 +1,350 @@
-ion-card-title {
-    align-items: center;
+.dashboard {
+    padding: 16px 16px calc(env(safe-area-inset-bottom) + 24px);
+}
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.section-title {
+    margin: 28px 4px 12px;
+    font-family: var(--brand-font);
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+}
+
+/* Perfil ------------------------------------------------------------ */
+
+.profile {
+    padding: 20px;
+    border-radius: 20px;
+    background: var(--brand-green);
+    color: #ffffff;
+}
+
+.profile-head {
     display: flex;
-    ion-icon {
-        margin-right: 8px;
+    align-items: center;
+    gap: 14px;
+}
+
+.profile-avatar {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.profile-name {
+    min-width: 0;
+
+    h1 {
+        margin: 0;
+        font-family: var(--brand-font);
+        font-weight: 800;
+        font-size: 26px;
+        line-height: 1.1;
     }
 }
 
-.flex-container {
-    align-items: center;
+.profile-greeting {
+    font-size: 14px;
+    color: var(--brand-mint);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.stat {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 12px 4px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.22);
+}
+
+.stat-highlight {
+    background: var(--brand-cream);
+    color: var(--brand-green);
+
+    .stat-label {
+        color: var(--brand-green);
+    }
+}
+
+.stat .stat-number {
+    font-size: 26px;
+    line-height: 1.1;
+}
+
+.stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--brand-mint);
+}
+
+/* El componente de puntaje trae un ancho fijo pensado para listas. */
+.stat-highlight app-score {
+    ::ng-deep .score {
+        width: auto;
+        margin-left: 4px;
+    }
+
+    ::ng-deep ion-icon {
+        font-size: 18px;
+    }
+}
+
+.last-games {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    padding: 8px;
+    margin-top: 16px;
+}
 
-    h1 {
-        &.score-wrapper {
-            background-color: var(--ion-color-primary);
-            border-radius: 12px;
-            color: var(--ion-color-primary-contrast);
-            padding: 8px;
-        }
-        &.text-truncate {
-            flex: 1;
-            
-            margin-left: 15px;
-            margin-right: 15px;
-            overflow: hidden;
-            text-align: center;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+.last-games-dots {
+    display: flex;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dot {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-family: var(--brand-font);
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.dot-won {
+    background: var(--ion-color-success);
+    color: var(--ion-color-success-contrast);
+}
+
+.dot-lost {
+    background: var(--ion-color-danger);
+    color: var(--ion-color-danger-contrast);
+}
+
+.dot-empty {
+    border: 2px dashed rgba(255, 255, 255, 0.35);
+}
+
+.ranking-button {
+    --border-color: rgba(255, 255, 255, 0.5);
+    --color: #ffffff;
+    margin: 18px 0 0;
+}
+
+/* Partidos ---------------------------------------------------------- */
+
+.match-card {
+    margin: 0 0 10px;
+
+    &::part(native) {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-sizing: border-box;
+        padding: 14px;
     }
 
-    ion-badge {
-        font-size: large;
-        min-width: 32px;
-        padding: 6px;
+    &.is-on {
+        border-color: var(--ion-color-success);
     }
+
+    &.is-full {
+        opacity: 0.75;
+    }
+}
+
+.match-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 56px;
+    padding: 6px 0;
+    border-radius: 12px;
+    background: var(--brand-cream);
+    color: var(--brand-green);
+    text-transform: uppercase;
+    line-height: 1.05;
+}
+
+.match-weekday,
+.match-month {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.match-day {
+    font-family: var(--brand-font);
+    font-weight: 800;
+    font-size: 24px;
+}
+
+.match-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    color: var(--ion-text-color);
+}
+
+.match-time {
+    font-family: var(--brand-font);
+    font-weight: 700;
+    font-size: 17px;
+}
+
+.match-time,
+.match-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 
     ion-icon {
-        font-size: xx-large;
+        flex-shrink: 0;
+        color: var(--ion-color-step-600);
+    }
+}
+
+.match-location {
+    font-size: 14px;
+    color: var(--ion-color-step-750);
+}
+
+.match-capacity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.capacity-bar {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--ion-color-step-150);
+    overflow: hidden;
+}
+
+.capacity-fill {
+    height: 100%;
+    max-width: 100%;
+    border-radius: 3px;
+    background: var(--ion-color-success);
+}
+
+.is-full .capacity-fill {
+    background: var(--ion-color-step-500);
+}
+
+.capacity-text {
+    font-family: var(--brand-font);
+    font-weight: 700;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ion-color-step-750);
+}
+
+.match-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-on {
+    background: var(--ion-color-success);
+    color: var(--ion-color-success-contrast);
+}
+
+.status-full {
+    background: var(--ion-color-step-200);
+    color: var(--ion-text-color);
+}
+
+.status-open {
+    background: rgba(var(--ion-color-secondary-rgb), 0.16);
+    color: var(--ion-color-secondary);
+}
+
+.match-chevron {
+    font-size: 18px;
+    color: var(--ion-color-step-500);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 28px 16px;
+    border: 1px dashed var(--ion-border-color);
+    border-radius: 16px;
+    color: var(--ion-color-step-650);
+    text-align: center;
+
+    ion-icon {
+        font-size: 36px;
     }
 
-    .flex-container-alt {
-        align-items: center;
-        display: flex;
-        font-size: large;
-
-        ion-icon {
-            font-size: x-large;
-            margin-right: 8px;
-        }
+    p {
+        margin: 0;
     }
+}
+
+/* Administración ---------------------------------------------------- */
+
+.admin-list {
+    padding: 0;
+    border: 1px solid var(--ion-border-color);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+app-news-card {
+    display: block;
+    margin-top: 28px;
 }

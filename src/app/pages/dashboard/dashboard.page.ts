@@ -2,8 +2,8 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
-  IonAvatar, IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonFab,
-  IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonLabel, IonMenuButton, IonTitle, IonToolbar
+  IonAvatar, IonButton, IonButtons, IonCard, IonContent, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList,
+  IonMenuButton, IonTitle, IonToolbar
 } from '@ionic/angular';
 import { combineLatest, map } from 'rxjs';
 
@@ -22,8 +22,8 @@ import { DbService } from 'src/app/services/db.service';
   styleUrls: ['./dashboard.page.scss'],
   imports: [
     AsyncPipe, DatePipe, RouterLink, NewsCardComponent, SafeImageDirective, ScoreComponent,
-    IonAvatar, IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonFab,
-    IonFabButton, IonFabList, IonGrid, IonHeader, IonIcon, IonLabel, IonMenuButton, IonTitle, IonToolbar
+    IonAvatar, IonButton, IonButtons, IonCard, IonContent, IonGrid, IonHeader, IonIcon, IonItem, IonLabel, IonList,
+    IonMenuButton, IonTitle, IonToolbar
   ],
 })
 export class DashboardPage {

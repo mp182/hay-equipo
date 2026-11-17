@@ -1,10 +1,10 @@
 import { addIcons } from 'ionicons';
 import {
   addCircleOutline, arrowDown, arrowUp, calendar, checkmark,
-  checkmarkCircle, checkmarkDoneCircle, close, closeCircle, cloudOfflineOutline, create, downloadOutline, enter, flag,
+  checkmarkCircle, checkmarkDoneCircle, chevronForward, close, closeCircle, cloudOfflineOutline, create, downloadOutline, enter, flag,
   flagOutline, football, informationCircle, informationCircleOutline, logIn, logOut, medal, newspaperOutline,
   people, personAdd, pin, play, podium, refresh, removeCircle, rocketOutline, sad, settings, star, starHalf,
-  starOutline, stopCircle, trophy, wifi
+  starOutline, stopCircle, timeOutline, trophy, wifi
 } from 'ionicons/icons';
 
 /**
@@ -14,9 +14,9 @@ import {
 export function registerIcons() {
   addIcons({
     addCircleOutline, arrowDown, arrowUp, calendar, checkmark,
-    checkmarkCircle, checkmarkDoneCircle, close, closeCircle, cloudOfflineOutline, create, downloadOutline, enter, flag,
+    checkmarkCircle, checkmarkDoneCircle, chevronForward, close, closeCircle, cloudOfflineOutline, create, downloadOutline, enter, flag,
     flagOutline, football, informationCircle, informationCircleOutline, logIn, logOut, medal, newspaperOutline,
     people, personAdd, pin, play, podium, refresh, removeCircle, rocketOutline, sad, settings, star, starHalf,
-    starOutline, stopCircle, trophy, wifi
+    starOutline, stopCircle, timeOutline, trophy, wifi
   });
 }
