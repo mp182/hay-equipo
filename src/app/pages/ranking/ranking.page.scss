@@ -1,8 +1,236 @@
-ion-badge {
-    min-width: 25px;
+.segment-toolbar {
+    --background: var(--brand-green);
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-bottom: 10px;
 }
 
-.flex-container {
+ion-segment {
+    max-width: 520px;
+    margin: 0 auto;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+ion-segment-button {
+    --color: rgba(255, 255, 255, 0.75);
+    --color-checked: var(--brand-green);
+    --indicator-color: var(--brand-cream);
+    /* Altura fija: un porcentaje no resuelve dentro del botón y el indicador queda en 0 */
+    --indicator-height: 36px;
+    --border-radius: 8px;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    min-height: 36px;
+    height: 36px;
+
+    ion-label {
+        margin: 0;
+    }
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.ranking-page {
+    padding: 16px 16px 24px;
+}
+
+.qualify-note {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(var(--ion-color-secondary-rgb), 0.12);
+    color: var(--ion-color-secondary);
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Podio ------------------------------------------------------------- */
+
+.podium {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    gap: 8px;
+    margin: 8px 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.podium-spot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.podium-avatar {
+    width: 52px;
+    height: 52px;
+    border: 3px solid var(--medal);
+}
+
+.place-1 .podium-avatar {
+    width: 68px;
+    height: 68px;
+}
+
+.podium-name {
+    max-width: 100%;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.is-me .podium-name {
+    color: var(--ion-color-success);
+}
+
+.podium-value {
+    font-size: 16px;
+
+    small {
+        font-size: 11px;
+        color: var(--ion-color-step-600);
+    }
+
+    app-score ::ng-deep .score {
+        width: auto;
+        margin-left: 2px;
+    }
+}
+
+.podium-step {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    margin-top: 4px;
+    border-radius: 12px 12px 0 0;
+    background: var(--medal);
+    color: var(--ion-color-step-50);
+    font-family: var(--brand-font);
+    font-weight: 800;
+    font-size: 26px;
+}
+
+.place-1 {
+    --medal: #f2c94c;
+
+    .podium-step {
+        height: 92px;
+    }
+}
+
+.place-2 {
+    --medal: #c9d1cc;
+
+    .podium-step {
+        height: 68px;
+    }
+}
+
+.place-3 {
+    --medal: #d39a6a;
+
+    .podium-step {
+        height: 50px;
+    }
+}
+
+/* Tabla ------------------------------------------------------------- */
+
+.table {
+    border: 1px solid var(--ion-border-color);
+    border-radius: 16px;
+    background: var(--ion-card-background);
+    overflow: hidden;
+}
+
+.table-row {
     display: flex;
     align-items: center;
+    gap: 8px;
+    min-height: 52px;
+    padding: 0 12px;
+    border-top: 1px solid var(--ion-border-color);
+
+    &.is-me {
+        background: rgba(var(--ion-color-success-rgb), 0.12);
+        box-shadow: inset 3px 0 0 var(--ion-color-success);
+    }
+}
+
+.table-head {
+    min-height: 36px;
+    border-top: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ion-color-step-600);
+}
+
+.col-pos {
+    width: 20px;
+    flex-shrink: 0;
+    font-family: var(--brand-font);
+    font-weight: 700;
+    text-align: right;
+    color: var(--ion-color-step-500);
+}
+
+.table-head .col-pos {
+    font-family: inherit;
+}
+
+.col-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.row-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.col-num {
+    width: 30px;
+    flex-shrink: 0;
+    font-family: var(--brand-font);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--ion-color-step-700);
+}
+
+.table-head .col-num {
+    font-family: inherit;
+}
+
+.col-score {
+    width: 40px;
+}
+
+.col-num.is-sorted {
+    color: var(--ion-text-color);
+}
+
+.table-head .is-sorted {
+    color: var(--brand-cream);
+}
+
+.table-row:not(.table-head) .col-num.is-sorted {
+    font-size: 17px;
+}
+
+.footnote {
+    margin: 14px 4px 0;
+    font-size: 13px;
+    color: var(--ion-color-step-600);
+    text-align: center;
 }

@@ -46,23 +46,12 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/add-news/add-news.page').then(m => m.AddNewsPage)
       },
       {
-        path: 'ranking-tabs',
-        loadComponent: () => import('./pages/ranking-tabs/ranking-tabs.page').then(m => m.RankingTabsPage),
-        children: [
-          {
-            path: 'ranking',
-            loadComponent: () => import('./pages/ranking/ranking.page').then(m => m.RankingPage)
-          },
-          {
-            path: 'asistencias',
-            loadComponent: () => import('./pages/asistencias/asistencias.page').then(m => m.AsistenciasPage)
-          },
-          {
-            path: 'ganados',
-            loadComponent: () => import('./pages/ganados/ganados.page').then(m => m.GanadosPage)
-          },
-        ]
+        path: 'ranking',
+        loadComponent: () => import('./pages/ranking/ranking.page').then(m => m.RankingPage)
       },
+      // Direcciones viejas del ranking con pestañas.
+      { path: 'ranking-tabs', redirectTo: 'ranking', pathMatch: 'full' },
+      { path: 'ranking-tabs/:tab', redirectTo: 'ranking' },
       {
         path: 'new-season',
         canActivate: [adminGuard('superadmin')],

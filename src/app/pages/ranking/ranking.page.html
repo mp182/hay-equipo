@@ -1,40 +1,97 @@
-<ion-content>
-    <ion-grid fixed>
-        <ion-card>
-            <ion-card-header>
-                <ion-card-subtitle>Referencia</ion-card-subtitle>
-            </ion-card-header>
-            <ion-item>
-                <ion-avatar slot="start">
-                    <img src="assets/img/playerAvatar.png" alt="Avatar">
-                </ion-avatar>
-                <h5> Nombre </h5>
-                <h4 slot="end">
-                    <ion-badge color="primary" class="ion-margin-end"> PJ </ion-badge>
-                    <ion-badge color="success" class="ion-margin-end"> PG </ion-badge>
-                    <ion-icon name="star"></ion-icon>
-                    Pts
-                </h4>
-            </ion-item>
-            <ion-card-content>
-                Solo aparecen jugadores con 10 partidos jugados o más.
-            </ion-card-content>
-        </ion-card>
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="dashboard"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Ranking</ion-title>
+        <ion-buttons slot="secondary">
+            <ion-menu-button [autoHide]="false"></ion-menu-button>
+        </ion-buttons>
+    </ion-toolbar>
+    <ion-toolbar class="segment-toolbar">
+        <ion-segment [value]="category()" (ionChange)="setCategory($event.detail.value)">
+            <ion-segment-button value="general">
+                <ion-label>Promedio</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="asistencias">
+                <ion-label>Jugados</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="ganados">
+                <ion-label>Ganados</ion-label>
+            </ion-segment-button>
+        </ion-segment>
+    </ion-toolbar>
+</ion-header>
 
-        <ion-list>
-            @for (player of players(); track player.id) {
-            <ion-item>
-                <ion-avatar slot="start">
-                    <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="Avatar">
-                </ion-avatar>
-                <h6>{{player.nickname}}</h6>
-                <div class="flex-container" slot="end">
-                    <ion-badge color="primary" class="ion-margin-end">{{ player.played }}</ion-badge>
-                    <ion-badge color="success" class="ion-margin-end">{{ player.won }}</ion-badge>
-                    <app-score [player]="player"></app-score>
+<ion-content>
+    <ion-grid fixed class="ranking-page">
+
+        @if (gamesToQualify(); as missing) {
+            <p class="qualify-note">
+                Te {{ missing === 1 ? 'falta 1 partido' : 'faltan ' + missing + ' partidos' }} para entrar al ranking.
+            </p>
+        }
+
+        @if (sorted().length === 0) {
+            <div class="empty-state">
+                <p>Todavía nadie llegó a {{ minGames }} partidos.</p>
+            </div>
+        } @else {
+            <!-- Podio -->
+            <ol class="podium" aria-label="Podio">
+                @for (spot of podium(); track spot.player.id) {
+                    <li class="podium-spot" [class]="'place-' + spot.place" [class.is-me]="spot.player.id === me()?.id">
+                        <ion-avatar class="podium-avatar">
+                            <img [src]="spot.player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="">
+                        </ion-avatar>
+                        <span class="podium-name text-truncate">{{ spot.player.nickname }}</span>
+                        <span class="podium-value stat-number">
+                            @switch (category()) {
+                                @case ('general') { <app-score [player]="spot.player"></app-score> }
+                                @case ('asistencias') { {{ spot.player.played }} <small>PJ</small> }
+                                @case ('ganados') { {{ spot.player.won }} <small>PG</small> }
+                            }
+                        </span>
+                        <div class="podium-step" aria-hidden="true">{{ spot.place }}</div>
+                        <span class="sr-only">Puesto {{ spot.place }}</span>
+                    </li>
+                }
+            </ol>
+
+            <!-- Resto de la tabla -->
+            @if (rest().length) {
+                <div class="table" role="table" aria-label="Ranking">
+                    <div class="table-row table-head" role="row">
+                        <span role="columnheader" class="col-pos">#</span>
+                        <span role="columnheader" class="col-name">Jugador</span>
+                        <span role="columnheader" class="col-num" [class.is-sorted]="category() === 'asistencias'"
+                            title="Partidos jugados">PJ</span>
+                        <span role="columnheader" class="col-num" [class.is-sorted]="category() === 'ganados'"
+                            title="Partidos ganados">PG</span>
+                        <span role="columnheader" class="col-num col-score" [class.is-sorted]="category() === 'general'"
+                            title="Promedio de partidos ganados">Prom.</span>
+                    </div>
+                    @for (player of rest(); track player.id; let i = $index) {
+                        <div class="table-row" role="row" [class.is-me]="player.id === me()?.id">
+                            <span role="cell" class="col-pos">{{ i + 4 }}</span>
+                            <span role="cell" class="col-name">
+                                <ion-avatar class="row-avatar">
+                                    <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="">
+                                </ion-avatar>
+                                <span class="text-truncate">{{ player.nickname }}</span>
+                            </span>
+                            <span role="cell" class="col-num" [class.is-sorted]="category() === 'asistencias'">{{ player.played }}</span>
+                            <span role="cell" class="col-num" [class.is-sorted]="category() === 'ganados'">{{ player.won }}</span>
+                            <span role="cell" class="col-num col-score" [class.is-sorted]="category() === 'general'">
+                                <app-score-number [player]="player"></app-score-number>
+                            </span>
+                        </div>
+                    }
                 </div>
-            </ion-item>
             }
-        </ion-list>
+
+            <p class="footnote">Solo aparecen los jugadores con {{ minGames }} partidos o más.</p>
+        }
+
     </ion-grid>
 </ion-content>
