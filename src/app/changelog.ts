@@ -13,6 +13,16 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '2.2.0',
+    changes: [
+      'La app tiene diseño nuevo, con los colores de la cancha.',
+      'En el inicio ves tus estadísticas de un vistazo y cada partido muestra cuántos lugares quedan.',
+      'En el partido, anotarte o bajarte es un solo botón, y los equipos muestran su promedio para ver si quedaron parejos.',
+      'El ranking abre directo en la tabla, con podio para los tres primeros.',
+      'Para cerrar sesión, la app te pregunta antes.',
+    ]
+  },
+  {
     version: '2.1.0',
     changes: [
       'Cuando hay una versión nueva, la app avisa y se actualiza con un toque.',
