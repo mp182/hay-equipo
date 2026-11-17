@@ -28,9 +28,12 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-@import url('https://fonts.googleapis.com/css2?family=Exo+2&display=swap');
-
-/* Tipografía de marca (logo y títulos destacados). Se empaqueta con la app para que funcione offline. */
+/* Tipografías. Se empaquetan con la app para que funcionen sin conexión. */
+@import "@fontsource/exo-2/latin-400.css";
+@import "@fontsource/exo-2/latin-600.css";
+@import "@fontsource/exo-2/latin-700.css";
+/* Marca: logo, títulos y números destacados. */
+@import "@fontsource/bricolage-grotesque/latin-700.css";
 @import "@fontsource/bricolage-grotesque/latin-800.css";
 
 :root {
@@ -39,4 +42,44 @@
   --brand-green: #14532d;
   --brand-black: #0b0b0b;
   --brand-cream: #f4efe3;
+  --brand-mint: #bbf7d0;
+
+  /* Colores de las remeras de los equipos */
+  --shirt-white: #f4efe3;
+  --shirt-white-contrast: #0b0b0b;
+  --shirt-black: #0b0b0b;
+  --shirt-black-contrast: #f4efe3;
+}
+
+/* Barras superiores: todas con el verde de marca, como el login */
+ion-header ion-toolbar {
+  --background: var(--brand-green);
+  --color: #ffffff;
+  --border-width: 0;
+}
+
+ion-title {
+  font-family: var(--brand-font);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+ion-card-title {
+  font-family: var(--brand-font);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Números de estadísticas (puntos, jugados, ganados) */
+.stat-number,
+ion-badge {
+  font-family: var(--brand-font);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+ion-card {
+  border: 1px solid var(--ion-border-color);
+  border-radius: 16px;
+  box-shadow: none;
 }

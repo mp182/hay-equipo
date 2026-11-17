@@ -1,5 +1,5 @@
 <ion-header>
-    <ion-toolbar color="primary">
+    <ion-toolbar>
         <ion-buttons slot="start">
             <ion-back-button defaultHref="dashboard"></ion-back-button>
         </ion-buttons>
@@ -127,7 +127,7 @@
             }
 
             @if (teamWhite().length > 1) {
-                <ion-toolbar color="dark" mode="ios">
+                <ion-toolbar mode="ios" class="shirt-toolbar shirt-white">
                     <ion-label slot="start" class="ion-margin-horizontal">
                         <ion-icon name="flag-outline"></ion-icon>
                     </ion-label>
@@ -143,13 +143,13 @@
                         </ion-row>
                         <ion-row class="ion-justify-content-center">
                             @for (teamPlayer of teamWhite(); track teamPlayer.id) {
-                                <ion-chip color="primary" style="background-color: whitesmoke;">
+                                <ion-chip class="shirt-chip shirt-white">
                                     <ion-avatar class="ion-margin-end">
                                         <img [src]="teamPlayer.image || 'assets/img/playerAvatar.png'" appSafeImage
                                             alt="Avatar">
                                     </ion-avatar>
-                                    <ion-label style="color: black"><strong>{{ teamPlayer.nickname }}</strong></ion-label>
-                                    <ion-badge class="ion-margin-start" style="background-color: black;">
+                                    <ion-label><strong>{{ teamPlayer.nickname }}</strong></ion-label>
+                                    <ion-badge class="ion-margin-start">
                                         <app-score-number [player]="teamPlayer"></app-score-number>
                                     </ion-badge>
                                 </ion-chip>
@@ -160,34 +160,33 @@
             }
 
             @if (hasTeams()) {
-                <ion-toolbar color="light" mode="ios">
+                <ion-toolbar mode="ios" class="shirt-toolbar shirt-black">
                     <ion-label slot="start" class="ion-margin-horizontal">
-                        <ion-icon name="flag" style="color: black;"></ion-icon>
+                        <ion-icon name="flag"></ion-icon>
                     </ion-label>
                     <ion-title class="teamToolbar">Remera <strong>NEGRA</strong></ion-title>
                     <ion-label slot="end" class="ion-margin-horizontal">
-                        <ion-icon name="flag" style="color: black;"></ion-icon>
+                        <ion-icon name="flag"></ion-icon>
                     </ion-label>
                 </ion-toolbar>
                 <ion-card class="team-card">
                     <ion-grid>
                         <ion-row class="ion-justify-content-center">
                             @for (teamPlayer of teamBlack(); track teamPlayer.id) {
-                                <ion-chip color="primary" style="background-color: black;">
+                                <ion-chip class="shirt-chip shirt-black">
                                     <ion-avatar class="ion-margin-end">
                                         <img [src]="teamPlayer.image || 'assets/img/playerAvatar.png'" appSafeImage
                                             alt="Avatar">
                                     </ion-avatar>
-                                    <ion-label style="color: whitesmoke"><strong>{{ teamPlayer.nickname }}</strong></ion-label>
-                                    <ion-badge class="ion-margin-start" style="background-color: whitesmoke; color: black;">
+                                    <ion-label><strong>{{ teamPlayer.nickname }}</strong></ion-label>
+                                    <ion-badge class="ion-margin-start">
                                         <app-score-number [player]="teamPlayer"></app-score-number>
                                     </ion-badge>
                                 </ion-chip>
                             }
                         </ion-row>
                         <ion-row class="ion-justify-content-center">
-                            <img src="assets/img/goal.png" width="64" class="ion-margin-top"
-                                style="transform: rotate(180deg);" alt="Arco">
+                            <img src="assets/img/goal.png" width="64" class="ion-margin-top goal-flipped" alt="Arco">
                         </ion-row>
                     </ion-grid>
                 </ion-card>

@@ -10,18 +10,6 @@ ion-card-header {
     }
 }
 
-.white {
-    color: lightgray;
-}
-
-.black {
-    color: black;
-}
-
-.yellow {
-    color: gold;
-}
-
 ion-badge {
     min-width: 25px;
 }
@@ -33,5 +21,36 @@ ion-badge {
 
 .team-card {
     background-image: url('../../../assets/img/green-grass-128x128.png');
-    border: 5px solid whitesmoke;
+    border: 5px solid var(--shirt-white);
+}
+
+.goal-flipped {
+    transform: rotate(180deg);
+}
+
+/* Remeras de los equipos: blanco y negro son los colores reales de las camisetas */
+.shirt-white {
+    --shirt-bg: var(--shirt-white);
+    --shirt-fg: var(--shirt-white-contrast);
+}
+
+.shirt-black {
+    --shirt-bg: var(--shirt-black);
+    --shirt-fg: var(--shirt-black-contrast);
+}
+
+.shirt-toolbar {
+    --background: var(--shirt-bg);
+    --color: var(--shirt-fg);
+}
+
+.shirt-chip {
+    --background: var(--shirt-bg);
+    background: var(--shirt-bg);
+    color: var(--shirt-fg);
+
+    ion-badge {
+        --background: var(--shirt-fg);
+        --color: var(--shirt-bg);
+    }
 }

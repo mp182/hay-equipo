@@ -1,6 +1,6 @@
 @if (player$ | async; as player) {
     <ion-header>
-        <ion-toolbar color="primary">
+        <ion-toolbar>
             <ion-title>Hola {{ player.nickname }}!</ion-title>
             <ion-buttons slot="secondary">
                 <ion-menu-button [autoHide]="true"></ion-menu-button>
@@ -17,19 +17,19 @@
                             <img [src]="player.image || 'assets/img/playerAvatar.png'" appSafeImage alt="Avatar">
                         </ion-avatar>
                         <h1 class="text-truncate">{{ player.nickname }}</h1>
-                        <h1 class="score-wrapper">
+                        <h1 class="score-wrapper stat-number">
                             <app-score [player]="player"></app-score>
                         </h1>
                     </div>
 
                     <div class="flex-container">
                         <div class="flex-container-alt">
-                            <ion-icon name="play" style="color: #3880ff"></ion-icon>
+                            <ion-icon name="play" color="primary"></ion-icon>
                             <ion-label>Jugados</ion-label>
                         </div>
                         <ion-badge color="primary">{{ player.played }}</ion-badge>
                         <div class="flex-container-alt">
-                            <ion-icon name="trophy" style="color: #ffc409"></ion-icon>
+                            <ion-icon name="trophy" color="warning"></ion-icon>
                             <ion-label>Ganados</ion-label>
                         </div>
                         <ion-badge color="primary">{{ player.won }}</ion-badge>
@@ -37,19 +37,19 @@
 
                     <div class="flex-container">
                         <div class="flex-container-alt">
-                            <ion-icon name="calendar" style="color: #3dc2ff"></ion-icon>
+                            <ion-icon name="calendar" color="secondary"></ion-icon>
                             <ion-label>Últimos 5</ion-label>
                         </div>
                         @for (i of lastGamesSlots; track i) {
                             @switch (player.lastGames?.[i]) {
                                 @case ('G') {
-                                    <ion-icon name="checkmark-circle" style="color: #2dd36f"></ion-icon>
+                                    <ion-icon name="checkmark-circle" color="success"></ion-icon>
                                 }
                                 @case ('P') {
-                                    <ion-icon name="close-circle" style="color: #eb445a"></ion-icon>
+                                    <ion-icon name="close-circle" color="danger"></ion-icon>
                                 }
                                 @default {
-                                    <ion-icon name="remove-circle" style="color: #92949c"></ion-icon>
+                                    <ion-icon name="remove-circle" color="medium"></ion-icon>
                                 }
                             }
                         }
