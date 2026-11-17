@@ -1,10 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar
+  IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar
 } from '@ionic/angular';
+import { NavigationHistoryService } from 'src/app/services/navigation-history.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { DbService } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -14,15 +15,15 @@ import { ToastService } from 'src/app/services/toast.service';
   templateUrl: './new-season.page.html',
   styleUrls: ['./new-season.page.scss'],
   imports: [
-    DatePipe,
-    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar
+    BackButtonComponent, DatePipe,
+    IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar
   ],
 })
 export class NewSeasonPage {
 
+  private readonly history = inject(NavigationHistoryService);
   private readonly db = inject(DbService);
   private readonly loadingService = inject(LoadingService);
-  private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
   /** Cuándo empezó la temporada actual (si se arrancó desde la app). */
@@ -44,7 +45,7 @@ export class NewSeasonPage {
     await this.loadingService.showLoading();
     try {
       await this.db.startNewSeason();
-      await this.router.navigateByUrl('dashboard');
+      await this.history.backTo('/dashboard');
       await this.toastService.successToast('Nueva Temporada 🔃✔');
     } catch (err: unknown) {
       if ((err as { code?: string })?.code === 'permission-denied') {

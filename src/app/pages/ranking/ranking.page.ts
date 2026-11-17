@@ -1,10 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
-  IonAvatar, IonBackButton, IonButtons, IonContent, IonGrid, IonHeader, IonLabel, IonMenuButton, IonSegment,
+  IonAvatar, IonButtons, IonContent, IonGrid, IonHeader, IonLabel, IonMenuButton, IonSegment,
   IonSegmentButton, IonTitle, IonToolbar
 } from '@ionic/angular';
 
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { ScoreComponent } from 'src/app/components/score/score.component';
 import { ScoreNumberComponent } from 'src/app/components/score-number/score-number.component';
 import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
@@ -27,8 +28,8 @@ const SORTERS: Record<RankingCategory, (a: Player, b: Player) => number> = {
   templateUrl: './ranking.page.html',
   styleUrls: ['./ranking.page.scss'],
   imports: [
-    ScoreComponent, ScoreNumberComponent, SafeImageDirective,
-    IonAvatar, IonBackButton, IonButtons, IonContent, IonGrid, IonHeader, IonLabel, IonMenuButton, IonSegment,
+    BackButtonComponent, ScoreComponent, ScoreNumberComponent, SafeImageDirective,
+    IonAvatar, IonButtons, IonContent, IonGrid, IonHeader, IonLabel, IonMenuButton, IonSegment,
     IonSegmentButton, IonTitle, IonToolbar
   ],
 })

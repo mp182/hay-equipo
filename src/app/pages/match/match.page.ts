@@ -3,9 +3,11 @@ import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
-  AlertButton, AlertController, IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonGrid,
+  AlertButton, AlertController, IonAvatar, IonButton, IonButtons, IonContent, IonFooter, IonGrid,
   IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenuButton, IonTitle, IonToolbar
 } from '@ionic/angular';
+import { NavigationHistoryService } from 'src/app/services/navigation-history.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { combineLatest, interval, map } from 'rxjs';
 
 import { ScoreComponent } from 'src/app/components/score/score.component';
@@ -29,13 +31,14 @@ const MATCH_DURATION = 60 * 60 * 1000;
   templateUrl: './match.page.html',
   styleUrls: ['./match.page.scss'],
   imports: [
-    DatePipe, DecimalPipe, RouterLink, SafeImageDirective, ScoreComponent, ScoreNumberComponent,
-    IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem,
+    BackButtonComponent, DatePipe, DecimalPipe, RouterLink, SafeImageDirective, ScoreComponent, ScoreNumberComponent,
+    IonAvatar, IonButton, IonButtons, IonContent, IonFooter, IonGrid, IonHeader, IonIcon, IonItem,
     IonLabel, IonList, IonMenuButton, IonTitle, IonToolbar
   ],
 })
 export class MatchPage implements OnInit {
 
+  private readonly history = inject(NavigationHistoryService);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly alertController = inject(AlertController);
   private readonly authService = inject(AuthenticationService);
@@ -150,7 +153,7 @@ export class MatchPage implements OnInit {
   unsubscribeAlert() {
     return this.confirm('No vas a jugar?', 'Te bajas del partido?', 'Me quedo 💪', 'Me bajo 😔', async () => {
       if (await this.withLoading(() => this.db.unsubscribe(this.player()!.id, this.matchId))) {
-        await this.router.navigateByUrl('dashboard');
+        await this.history.backTo('/dashboard');
       }
     }, 'ios');
   }
@@ -206,7 +209,7 @@ export class MatchPage implements OnInit {
         handler: () => {
           this.confirm('Partido Suspendido!', '¿Seguro...?', 'No, le erré 👎', 'Si 😀', async () => {
             if (await this.withLoading(() => this.db.updateMatch(this.matchId))) {
-              await this.router.navigateByUrl('dashboard');
+              await this.history.backTo('/dashboard');
             }
           });
         }
@@ -221,7 +224,7 @@ export class MatchPage implements OnInit {
       handler: () => {
         this.confirm(`${name}!`, '¿Seguro...?', 'No, le erré 👎', 'Si 😀', async () => {
           if (await this.withLoading(() => this.db.setWinner(this.matchId, team, this.teamWhite(), this.teamBlack()))) {
-            await this.router.navigateByUrl('dashboard');
+            await this.history.backTo('/dashboard');
           }
         });
       }

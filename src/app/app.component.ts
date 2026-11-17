@@ -14,6 +14,7 @@ import { LoadingService } from './services/loading.service';
 import { ConnectionService } from './services/connection.service';
 import { SafeImageDirective } from './directives/safe-image.directive';
 import { SyncStatusService } from './services/sync-status.service';
+import { NavigationHistoryService } from './services/navigation-history.service';
 import { registerIcons } from './icons';
 
 /** Cuánto tiene que seguir Firestore sin llegar al servidor para avisar que los datos pueden estar viejos. */
@@ -43,6 +44,8 @@ export class AppComponent {
 
   constructor() {
     registerIcons();
+    // Desde la primera pantalla, para que "volver" sepa qué hay en el historial.
+    inject(NavigationHistoryService);
 
     const destroyRef = inject(DestroyRef);
     const connection$ = inject(ConnectionService).monitor().pipe(share());
@@ -107,7 +110,8 @@ export class AppComponent {
       return;
     }
     this.urlBeforeOffline = this.router.url;
-    this.router.navigateByUrl('no-internet');
+    // Reemplaza la pantalla actual: al volver la conexión, se reemplaza de nuevo y el historial queda igual.
+    this.router.navigateByUrl('no-internet', { replaceUrl: true });
   }
 
   private async toggleStaleNotice(show: boolean) {
@@ -156,7 +160,7 @@ export class AppComponent {
     try {
       await this.authService.logoutUser();
       await this.menuCtrl.close();
-      await this.router.navigateByUrl('login');
+      await this.router.navigateByUrl('login', { replaceUrl: true });
     } catch (error) {
       console.error(error);
     }

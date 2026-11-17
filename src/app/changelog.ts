@@ -13,6 +13,12 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '2.2.1',
+    changes: [
+      'El botón atrás del celular funciona como en cualquier app: desde el inicio, cierra la app.',
+    ]
+  },
+  {
     version: '2.2.0',
     changes: [
       'La app tiene diseño nuevo, con los colores de la cancha.',

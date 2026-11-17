@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { AbstractControl, FormControl, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar
+  IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar
 } from '@ionic/angular';
 
+import { NavigationHistoryService } from 'src/app/services/navigation-history.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { DbService } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
@@ -20,16 +21,16 @@ function noWhitespaceValidator(control: AbstractControl<string>): ValidationErro
   templateUrl: './change-nickname.page.html',
   styleUrls: ['./change-nickname.page.scss'],
   imports: [
-    ReactiveFormsModule,
-    IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar
+    BackButtonComponent, ReactiveFormsModule,
+    IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar
   ],
 })
 export class ChangeNicknamePage {
 
+  private readonly history = inject(NavigationHistoryService);
   private readonly authService = inject(AuthenticationService);
   private readonly dbService = inject(DbService);
   private readonly loadingService = inject(LoadingService);
-  private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
   readonly nickname = new FormControl('', {
@@ -44,7 +45,7 @@ export class ChangeNicknamePage {
       await this.dbService.updateNickname(titleCase(this.nickname.value), user!.uid);
       this.nickname.reset();
       await this.toastService.successToast('Cambiaste tu apodo!');
-      await this.router.navigateByUrl('dashboard');
+      await this.history.backTo('/dashboard');
     } catch {
       await this.toastService.errorToast();
     } finally {

@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
 import {
-  IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, MenuController
+  IonAvatar, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, MenuController
 } from '@ionic/angular';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { LogoMarkComponent } from 'src/app/components/logo-mark/logo-mark.component';
 import { SafeImageDirective } from 'src/app/directives/safe-image.directive';
 import { APP_VERSION } from 'src/app/app-version';
@@ -11,8 +12,8 @@ import { APP_VERSION } from 'src/app/app-version';
   templateUrl: './about.page.html',
   styleUrls: ['./about.page.scss'],
   imports: [
-    LogoMarkComponent, SafeImageDirective,
-    IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar
+    BackButtonComponent, LogoMarkComponent, SafeImageDirective,
+    IonAvatar, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar
   ],
 })
 export class AboutPage {

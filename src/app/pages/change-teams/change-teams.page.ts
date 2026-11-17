@@ -1,10 +1,12 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonReorder,
+  IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonReorder,
   IonReorderGroup, IonTitle, IonToolbar, ReorderEndCustomEvent
 } from '@ionic/angular';
+import { NavigationHistoryService } from 'src/app/services/navigation-history.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { Subscription, combineLatest } from 'rxjs';
 
 import { Player } from 'src/app/models/player.interface';
@@ -23,17 +25,17 @@ const BLACK_FLAG: ReorderItem = { id: '__black', nickname: 'Remera negra', flag:
   templateUrl: './change-teams.page.html',
   styleUrls: ['./change-teams.page.scss'],
   imports: [
-    IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonReorder,
+    BackButtonComponent, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonItem, IonLabel, IonList, IonReorder,
     IonReorderGroup, IonTitle, IonToolbar
   ],
 })
 export class ChangeTeamsPage implements OnInit {
 
+  private readonly history = inject(NavigationHistoryService);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly db = inject(DbService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly loadingService = inject(LoadingService);
-  private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
   readonly matchId = this.activatedRoute.snapshot.paramMap.get('id')!;
@@ -84,7 +86,7 @@ export class ChangeTeamsPage implements OnInit {
     try {
       await this.db.moveBetweenTeams(this.matchId, movedToWhite, movedToBlack);
       await this.toastService.successToast('Se cambiaron los equipos!');
-      await this.router.navigate(['/match', this.matchId]);
+      await this.history.backTo(`/match/${this.matchId}`);
     } catch (err) {
       console.error(err);
       await this.toastService.errorToast();

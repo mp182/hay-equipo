@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { IonContent, MenuController } from '@ionic/angular';
 
+import { NavigationHistoryService } from 'src/app/services/navigation-history.service';
 import { LogoMarkComponent } from 'src/app/components/logo-mark/logo-mark.component';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { firebaseErrors } from '../../helpers/firebaseErrors';
@@ -14,9 +14,9 @@ import { firebaseErrors } from '../../helpers/firebaseErrors';
 })
 export class LoginPage {
 
+  private readonly history = inject(NavigationHistoryService);
   private readonly authService = inject(AuthenticationService);
   private readonly menuCtrl = inject(MenuController);
-  private readonly router = inject(Router);
 
   /** Mientras se revisa si ya hay una sesión iniciada, no se muestra el botón. */
   readonly checkingSession = signal(true);
@@ -68,7 +68,7 @@ export class LoginPage {
   }
 
   private goToDashboard() {
-    return this.router.navigateByUrl('dashboard', { replaceUrl: true });
+    return this.history.backTo('/dashboard');
   }
 
   private showError(err: any) {

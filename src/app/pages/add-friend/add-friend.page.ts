@@ -1,10 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
-  AlertController, IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonItem,
+  AlertController, IonAvatar, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonItem,
   IonLabel, IonList, IonMenuButton, IonSearchbar, IonTitle, IonToolbar, ModalController, SearchbarCustomEvent
 } from '@ionic/angular';
+import { NavigationHistoryService } from 'src/app/services/navigation-history.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { combineLatest, map } from 'rxjs';
 
 import { ScoreComponent } from 'src/app/components/score/score.component';
@@ -20,18 +22,18 @@ import { AddNewFriendPage } from '../add-new-friend/add-new-friend.page';
   templateUrl: './add-friend.page.html',
   styleUrls: ['./add-friend.page.scss'],
   imports: [
-    SafeImageDirective, ScoreComponent,
-    IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel,
+    BackButtonComponent, SafeImageDirective, ScoreComponent,
+    IonAvatar, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonItem, IonLabel,
     IonList, IonMenuButton, IonSearchbar, IonTitle, IonToolbar
   ],
 })
 export class AddFriendPage {
 
+  private readonly history = inject(NavigationHistoryService);
   private readonly alertController = inject(AlertController);
   private readonly dbService = inject(DbService);
   private readonly loadingService = inject(LoadingService);
   private readonly modalController = inject(ModalController);
-  private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
   readonly matchId = inject(ActivatedRoute).snapshot.paramMap.get('id')!;
@@ -89,7 +91,7 @@ export class AddFriendPage {
     try {
       await this.dbService.joinMatch(player, this.matchId);
       await this.toastService.successToast('Amigo anotado!');
-      await this.router.navigateByUrl(`match/${this.matchId}`);
+      await this.history.backTo(`/match/${this.matchId}`);
     } catch (err) {
       if (err instanceof MatchFullError) {
         await this.toastService.infoToast('El partido ya está completo.');

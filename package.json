@@ -1,6 +1,6 @@
 {
   "name": "hay-equipo-app",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "author": "Pablo Mancinelli",
   "scripts": {
     "ng": "ng",

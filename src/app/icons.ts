@@ -1,6 +1,6 @@
 import { addIcons } from 'ionicons';
 import {
-  addCircleOutline, arrowDown, arrowUp, calendar, checkmark,
+  addCircleOutline, arrowBackSharp, arrowDown, arrowUp, calendar, checkmark,
   checkmarkCircle, checkmarkDoneCircle, chevronForward, close, closeCircle, cloudOfflineOutline, create, createOutline, downloadOutline, enter, flag,
   flagOutline, football, informationCircle, informationCircleOutline, logIn, logOut, logOutOutline, medal, newspaperOutline,
   people, personAdd, pin, play, podium, refresh, removeCircle, rocketOutline, sad, settings, shuffle, star, starHalf,
@@ -13,7 +13,7 @@ import {
  */
 export function registerIcons() {
   addIcons({
-    addCircleOutline, arrowDown, arrowUp, calendar, checkmark,
+    addCircleOutline, arrowBackSharp, arrowDown, arrowUp, calendar, checkmark,
     checkmarkCircle, checkmarkDoneCircle, chevronForward, close, closeCircle, cloudOfflineOutline, create, createOutline, downloadOutline, enter, flag,
     flagOutline, football, informationCircle, informationCircleOutline, logIn, logOut, logOutOutline, medal, newspaperOutline,
     people, personAdd, pin, play, podium, refresh, removeCircle, rocketOutline, sad, settings, shuffle, star, starHalf,

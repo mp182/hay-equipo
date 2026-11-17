@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="dashboard"></ion-back-button>
+      <app-back-button [fallback]="'/match/' + matchId" />
     </ion-buttons>
     <ion-title>Cambiar equipos</ion-title>
   </ion-toolbar>

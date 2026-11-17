@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import {
-  IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput,
+  IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput,
   IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar
 } from '@ionic/angular';
 
+import { NavigationHistoryService } from 'src/app/services/navigation-history.service';
+import { BackButtonComponent } from 'src/app/components/back-button/back-button.component';
 import { DbService } from 'src/app/services/db.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -16,16 +17,16 @@ import { nextSaturday, toLocalIsoString } from '../../helpers/date.helpers';
   templateUrl: './add-game.page.html',
   styleUrls: ['./add-game.page.scss'],
   imports: [
-    ReactiveFormsModule,
-    IonBackButton, IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput,
+    BackButtonComponent, ReactiveFormsModule,
+    IonButton, IonButtons, IonContent, IonDatetime, IonDatetimeButton, IonHeader, IonInput,
     IonModal, IonSelect, IonSelectOption, IonTitle, IonToolbar
   ],
 })
 export class AddGamePage {
 
+  private readonly history = inject(NavigationHistoryService);
   private readonly dbService = inject(DbService);
   private readonly loadingService = inject(LoadingService);
-  private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
   readonly maxPlayerOptions = { header: 'Elegí uno 👇' };
@@ -45,7 +46,7 @@ export class AddGamePage {
     await this.loadingService.showLoading();
     try {
       await this.dbService.addMatch(matchDate, +maxPlayers, location.trim());
-      await this.router.navigateByUrl('dashboard');
+      await this.history.backTo('/dashboard');
       await this.toastService.successToast('Partido creado! ⚽');
     } catch {
       await this.toastService.errorToast();
